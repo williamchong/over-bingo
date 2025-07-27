@@ -4,6 +4,21 @@
 
 Inspired by the cooperative chaos of _Overcooked_, Over-Bingo challenges players to work together (or against each other) to complete a bingo board. It's not about luck; it's about quick thinking, frantic coordination, and a bit of mathematical mayhem.
 
+## 🎮 **PLAYABLE NOW!**
+
+**Single-player time attack mode is fully implemented!**
+- Run `npm install && npm run dev` 
+- Navigate to http://localhost:3000
+- Experience the complete game with tutorial, dynamic layouts, and timer-based challenges
+
+### ✅ Current Features
+- **Complete Single-Player Experience**: Start screen, tutorial, and main game
+- **Four Arithmetic Operations**: Addition, subtraction, multiplication, division
+- **Dynamic Gameplay**: Randomized numbers and shuffling station positions
+- **Time Attack Mode**: Real-time timer with completion tracking
+- **Professional UI**: Modal dialogs, interactive tutorial, clean interface
+- **Grid-Based Movement**: Block-based positioning with semi-transparent player
+
 ## Table of Contents
 
 1.  [Game Concept](https://www.google.com/search?q=%231-game-concept)
@@ -117,21 +132,23 @@ This project will be built using modern web technologies to ensure it's accessib
 
 We will follow an iterative development process, starting with the core experience and expanding from there.
 
-1.  **Milestone 1: Minimum Viable Product - Single Player**
+1.  **Milestone 1: Single-Player MVP ✅ COMPLETE**
 
-    - [ ] Implement basic player character movement on a 5x5 grid.
-    - [ ] Create UI for displaying the "Called Number".
-    - [ ] Implement Number Stations and the ability to pick up/drop numbers.
-    - [ ] Implement a single Processing Station (e.g., `+` only).
-    - [ ] Implement logic for placing a number on the board and checking for a bingo.
-    - **Goal:** Have a playable, if simple, single-player loop.
+    - [x] Implement grid-based player movement on extended 7x7 area (5x5 board + stations)
+    - [x] Create comprehensive UI with start screen, tutorial, timer, and modal dialogs
+    - [x] Implement Number Stations (1-9) with randomized positioning and shuffling
+    - [x] Implement all four Processing Stations (+, -, ×, ÷) with color coding
+    - [x] Implement rubbish bin for number disposal and complete interaction system
+    - [x] Add randomized number calling (1-25), placement logic, and bingo detection
+    - [x] **BONUS**: Time attack mode, dynamic station shuffling, professional polish
+    - **Status:** Fully playable single-player experience with advanced features!
 
-2.  **Milestone 2: Core Multiplayer & All Mechanics**
+2.  **Milestone 2: Multiplayer Foundation**
 
-    - [ ] Implement local multiplayer (multiple controllers/keyboard on one machine).
-    - [ ] Implement all four Processing Stations (`+`, `-`, `*`, `/`).
-    - [ ] Implement Workbenches and the stealing mechanic.
-    - [ ] Refine Co-op and VS mode rulesets based on playtesting.
+    - [ ] Implement local multiplayer (2-4 players) with shared board coordination
+    - [ ] Add player collision, collaboration mechanics, and resource competition
+    - [ ] Implement versus mode with separate boards and competitive elements
+    - [ ] Refine Co-op and VS mode balance based on playtesting
 
 3.  **Milestone 3: Content Expansion & Polish**
 
