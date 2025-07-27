@@ -35,8 +35,11 @@ export class GameScene extends Phaser.Scene {
 
   private readonly GRID_SIZE = 5;
   private readonly CELL_SIZE = 80;
-  private readonly BOARD_START_X = (800 - (4 * 80)) / 2; // Center horizontally: (screenWidth - boardWidth) / 2
-  private readonly BOARD_START_Y = (600 - (4 * 80)) / 2; // Center vertically: (screenHeight - boardHeight) / 2
+  private readonly EXTENDED_GRID_SIZE = 7; // 5x5 board + 1 cell on each side for stations
+  private readonly BOARD_START_X = (800 - (4 * 80)) / 2; // Center the 5x5 board horizontally
+  private readonly BOARD_START_Y = (600 - (5 * 80)) / 2; // Center the 5x5 board vertically
+  private readonly EXTENDED_START_X = this.BOARD_START_X - this.CELL_SIZE; // Extended grid starts 1 cell to the left
+  private readonly EXTENDED_START_Y = this.BOARD_START_Y - this.CELL_SIZE; // Extended grid starts 1 cell above
 
   constructor() {
     super({ key: "GameScene" });
@@ -44,10 +47,10 @@ export class GameScene extends Phaser.Scene {
 
   create() {
     this.createBingoBoard();
-    this.createPlayer();
     this.createNumberStations();
     this.createProcessingStations();
     this.createRubbishBin();
+    this.createPlayer(); // Create player last so it renders on top
     this.createUI();
     this.setupInput();
   }
@@ -86,14 +89,17 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createPlayer() {
-    const startX = this.BOARD_START_X + this.playerPosition.x * this.CELL_SIZE;
-    const startY = this.BOARD_START_Y + this.playerPosition.y * this.CELL_SIZE;
+    // Start player in center of the bingo board (position 3,3 in extended grid)
+    this.playerPosition = { x: 3, y: 3 };
+    const startX = this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
+    const startY = this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
 
     // Create player container
     this.player = this.add.container(startX, startY);
 
-    // Player rectangle
+    // Player rectangle (semi-transparent)
     this.playerRect = this.add.rectangle(0, 0, 20, 20, 0xe74c3c);
+    this.playerRect.setAlpha(0.7); // Make player semi-transparent
 
     // Number text (initially hidden)
     this.playerNumberText = this.add
@@ -270,7 +276,7 @@ export class GameScene extends Phaser.Scene {
       moved = true;
     } else if (
       Phaser.Input.Keyboard.JustDown(this.cursors.right!) &&
-      this.playerPosition.x < this.GRID_SIZE - 1
+      this.playerPosition.x < this.EXTENDED_GRID_SIZE - 1
     ) {
       this.playerPosition.x++;
       moved = true;
@@ -282,15 +288,15 @@ export class GameScene extends Phaser.Scene {
       moved = true;
     } else if (
       Phaser.Input.Keyboard.JustDown(this.cursors.down!) &&
-      this.playerPosition.y < this.GRID_SIZE - 1
+      this.playerPosition.y < this.EXTENDED_GRID_SIZE - 1
     ) {
       this.playerPosition.y++;
       moved = true;
     }
 
     if (moved) {
-      const newX = this.BOARD_START_X + this.playerPosition.x * this.CELL_SIZE;
-      const newY = this.BOARD_START_Y + this.playerPosition.y * this.CELL_SIZE;
+      const newX = this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
+      const newY = this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
 
       this.player.setPosition(newX, newY);
     }
@@ -298,68 +304,50 @@ export class GameScene extends Phaser.Scene {
 
   private handleNumberInteraction() {
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
-      // Check if player is near a number station
-      const playerWorldX =
-        this.BOARD_START_X + this.playerPosition.x * this.CELL_SIZE;
-      const playerWorldY =
-        this.BOARD_START_Y + this.playerPosition.y * this.CELL_SIZE;
+      const playerWorldX = this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
+      const playerWorldY = this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
 
-      // Check number stations first
+      // Check if standing exactly on a number station
       for (const station of this.numberStations) {
-        const distance = Phaser.Math.Distance.Between(
-          playerWorldX,
-          playerWorldY,
-          station.x,
-          station.y
-        );
-
-        if (distance < 100) {
-          // Within range of station
+        if (playerWorldX === station.x && playerWorldY === station.y) {
           if (this.playerHeldNumber === null) {
             // Pick up number
             this.playerHeldNumber = station.number;
             this.updateHeldNumberDisplay();
-            // Visual feedback removed for now
           }
           return;
         }
       }
 
-      // Check processing stations
+      // Check if standing exactly on a processing station
       for (const station of this.processingStations) {
-        const distance = Phaser.Math.Distance.Between(
-          playerWorldX,
-          playerWorldY,
-          station.x,
-          station.y
-        );
-
-        if (distance < 100) {
+        if (playerWorldX === station.x && playerWorldY === station.y) {
           this.handleProcessingStationInteraction(station);
           return;
         }
       }
 
-      // Check rubbish bin
-      if (this.rubbishBin) {
-        const distance = Phaser.Math.Distance.Between(
-          playerWorldX,
-          playerWorldY,
-          this.rubbishBin.x,
-          this.rubbishBin.y
-        );
-
-        if (distance < 150) {
-          this.handleRubbishBinInteraction();
-          return;
-        }
+      // Check if standing exactly on rubbish bin
+      if (this.rubbishBin && playerWorldX === this.rubbishBin.x && playerWorldY === this.rubbishBin.y) {
+        this.handleRubbishBinInteraction();
+        return;
       }
 
-      // If not near any station and holding a number, try to place it on the board
-      if (this.playerHeldNumber !== null) {
+      // If standing on the bingo board and holding a number, try to place it
+      if (this.playerHeldNumber !== null && this.isOnBingoBoard()) {
         this.tryPlaceNumberOnBoard();
       }
     }
+  }
+
+  private isOnBingoBoard(): boolean {
+    // Check if player is within the 5x5 bingo board area (positions 1-5 in extended grid)
+    return (
+      this.playerPosition.x >= 1 &&
+      this.playerPosition.x <= 5 &&
+      this.playerPosition.y >= 1 &&
+      this.playerPosition.y <= 5
+    );
   }
 
   private updateHeldNumberDisplay() {
@@ -372,8 +360,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   private tryPlaceNumberOnBoard() {
-    const row = this.playerPosition.y;
-    const col = this.playerPosition.x;
+    // Convert extended grid position to bingo board position
+    const row = this.playerPosition.y - 1; // Extended grid is offset by 1
+    const col = this.playerPosition.x - 1; // Extended grid is offset by 1
 
     // Check if cell is already occupied
     if (this.boardState[row][col] !== null) {
