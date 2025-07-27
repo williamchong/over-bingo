@@ -17,7 +17,6 @@ export class TutorialScene extends Phaser.Scene {
 
   private createTutorialPages() {
     const centerX = this.cameras.main.width / 2;
-    const centerY = this.cameras.main.height / 2;
 
     // Page 1: Basic Movement
     const page1 = this.add.container(0, 0);
@@ -36,16 +35,26 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 200, "• Use ARROW KEYS to move around the 5x5 bingo board", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          200,
+          "• Use ARROW KEYS to move around the 5x5 bingo board",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
       this.add
-        .text(centerX, 230, "• Your goal is to complete a row, column, or diagonal", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          230,
+          "• Your goal is to complete a row, column, or diagonal",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
       this.add
         .text(centerX, 260, "• A called number will be displayed at the top", {
@@ -54,10 +63,15 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 290, "• You must create this number using math operations", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          290,
+          "• You must create this number using math operations",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
       this.add
         .text(centerX, 320, "• Then place it on the correct bingo square", {
@@ -98,10 +112,15 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 250, "• Stand near one and press SPACE to pick up a number", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          250,
+          "• Stand near one and press SPACE to pick up a number",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
       this.add
         .text(centerX, 290, "PURPLE STATION:", {
@@ -117,10 +136,15 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 350, "• Drop one number, then drop another to add them", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          350,
+          "• Drop one number, then drop another to add them",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
     ]);
     this.pageContent.push(page2);
@@ -167,16 +191,26 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 320, "4. Return to purple station, press SPACE (3+4=7)", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          320,
+          "4. Return to purple station, press SPACE (3+4=7)",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
       this.add
-        .text(centerX, 350, "5. Move to empty bingo square, press SPACE to place", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          350,
+          "5. Move to empty bingo square, press SPACE to place",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
       this.add
         .text(centerX, 380, "6. Repeat until you get BINGO!", {

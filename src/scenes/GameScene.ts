@@ -338,7 +338,7 @@ export class GameScene extends Phaser.Scene {
   private setupInput() {
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.spaceKey = this.input.keyboard!.addKey(
-      Phaser.Input.Keyboard.KeyCodes.SPACE
+      Phaser.Input.Keyboard.KeyCodes.SPACE,
     );
   }
 
@@ -361,13 +361,6 @@ export class GameScene extends Phaser.Scene {
 
     const timeString = `Time: ${minutes}:${displaySeconds.toString().padStart(2, "0")}`;
     this.timerText.setText(timeString);
-  }
-
-  private startTimer() {
-    if (!this.gameStarted) {
-      this.gameStarted = true;
-      this.startTime = this.time.now;
-    }
   }
 
   private handlePlayerMovement() {
@@ -501,7 +494,7 @@ export class GameScene extends Phaser.Scene {
             fontSize: "24px",
             color: "#2ecc71",
             fontStyle: "bold",
-          }
+          },
         )
         .setOrigin(0.5);
 
@@ -734,7 +727,7 @@ export class GameScene extends Phaser.Scene {
             fontSize: "16px",
             color: "#e74c3c",
             fontStyle: "bold",
-          }
+          },
         )
         .setOrigin(0.5);
 
@@ -816,19 +809,19 @@ export class GameScene extends Phaser.Scene {
     const centerY = this.cameras.main.height / 2;
 
     // Create full-screen dark overlay
-    const fullOverlay = this.add
+    this.add
       .rectangle(
         centerX,
         centerY,
         this.cameras.main.width,
         this.cameras.main.height,
-        0x000000
+        0x000000,
       )
       .setAlpha(0.7)
       .setOrigin(0.5);
 
     // Create modal dialog background (increased height for completion time)
-    const modalBg = this.add
+    this.add
       .rectangle(centerX, centerY, 450, 420, 0x34495e)
       .setOrigin(0.5)
       .setStrokeStyle(4, 0x2c3e50);
