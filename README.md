@@ -1,5 +1,7 @@
 # Over-Bingo
 
+![Over-Bingo Game](src/cover.png)
+
 **A chaotic fusion of bingo, math, and frantic multiplayer action.**
 
 Inspired by the cooperative chaos of _Overcooked_, Over-Bingo challenges players to work together (or against each other) to complete a bingo board. It's not about luck; it's about quick thinking, frantic coordination, and a bit of mathematical mayhem.

@@ -1,9 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Over-Bingo</title>
+
+    <!-- Primary Meta Tags -->
+    <title>Over-Bingo | Chaotic Math Bingo Action Game</title>
+    <meta name="title" content="Over-Bingo | Chaotic Math Bingo Action Game">
+    <meta name="description"
+        content="A chaotic fusion of bingo, math, and frantic multiplayer action inspired by Overcooked. Play solo time attack or competitive 2-player VS mode. Create numbers using arithmetic operations and race to get BINGO!">
+    <meta name="keywords"
+        content="bingo game, math game, multiplayer game, browser game, educational game, overcooked inspired, arithmetic game, puzzle game, competitive game">
+    <meta name="author" content="William Chong">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://williamchong.github.io/over-bingo/">
+    <meta property="og:title" content="Over-Bingo | Chaotic Math Bingo Action Game">
+    <meta property="og:description"
+        content="A chaotic fusion of bingo, math, and frantic multiplayer action inspired by Overcooked. Play solo time attack or competitive 2-player VS mode. Create numbers using arithmetic operations and race to get BINGO!">
+    <meta property="og:image" content="https://williamchong.github.io/over-bingo/cover.png">
+    <meta property="og:image:alt" content="Over-Bingo game screenshot showing math bingo gameplay">
+    <meta property="og:image:width" content="1728">
+    <meta property="og:image:height" content="1294">
+
+    <!-- Additional SEO -->
+    <meta name="theme-color" content="#f39c12">
+    <link rel="canonical" href="https://williamchong.github.io/over-bingo/">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="./cover.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./cover.png">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "Over-Bingo",
+      "description": "A chaotic fusion of bingo, math, and frantic multiplayer action inspired by Overcooked. Create numbers using arithmetic operations and race to get BINGO!",
+      "url": "https://williamchong.github.io/over-bingo/",
+      "image": "https://williamchong.github.io/over-bingo/cover.png",
+      "genre": ["Puzzle", "Educational", "Multiplayer", "Action"],
+      "gamePlatform": ["Web Browser"],
+      "numberOfPlayers": "1-2",
+      "playMode": ["SinglePlayer", "MultiPlayer"],
+      "applicationCategory": "Game",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "William Chong"
+      }
+    }
+    </script>
     <style>
         body {
             margin: 0;
@@ -15,14 +72,17 @@
             align-items: center;
             min-height: 100vh;
         }
+
         #game-container {
             border: 2px solid #34495e;
             border-radius: 8px;
         }
     </style>
 </head>
+
 <body>
     <div id="game-container"></div>
     <script type="module" src="./main.ts"></script>
 </body>
+
 </html>
