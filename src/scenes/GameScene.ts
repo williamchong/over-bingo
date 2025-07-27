@@ -180,23 +180,8 @@ export class GameScene extends Phaser.Scene {
       color: "#95a5a6",
     });
 
-    // Instructions
-    this.add.text(50, 160, "Arrow keys: Move", {
-      fontSize: "14px",
-      color: "#bdc3c7",
-    });
-
-    this.add.text(50, 180, "Space: Pick up/Drop number", {
-      fontSize: "14px",
-      color: "#bdc3c7",
-    });
-
-    this.add.text(50, 200, "Green stations: Number sources", {
-      fontSize: "14px",
-      color: "#bdc3c7",
-    });
-
-    this.add.text(50, 220, "Purple station: Addition (+)", {
+    // Game controls reminder (minimal)
+    this.add.text(50, 160, "Space: Interact", {
       fontSize: "14px",
       color: "#bdc3c7",
     });
@@ -496,14 +481,59 @@ export class GameScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    // Play again button
+    const playAgainButton = this.add
+      .rectangle(400, 430, 150, 40, 0x3498db)
+      .setInteractive()
+      .setStrokeStyle(2, 0x5dade2)
+      .setOrigin(0.5);
+
     this.add
-      .text(400, 400, "Refresh to play again", {
+      .text(400, 430, "PLAY AGAIN", {
         fontSize: "16px",
-        color: "#bdc3c7",
+        color: "#ecf0f1",
+        fontStyle: "bold",
       })
       .setOrigin(0.5);
 
-    // Disable further input
-    this.input.keyboard!.enabled = false;
+    // Menu button
+    const menuButton = this.add
+      .rectangle(400, 480, 150, 40, 0xe74c3c)
+      .setInteractive()
+      .setStrokeStyle(2, 0xc0392b)
+      .setOrigin(0.5);
+
+    this.add
+      .text(400, 480, "MAIN MENU", {
+        fontSize: "16px",
+        color: "#ecf0f1",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+
+    // Button interactions
+    playAgainButton.on("pointerdown", () => {
+      this.scene.restart();
+    });
+
+    menuButton.on("pointerdown", () => {
+      this.scene.start("StartScene");
+    });
+
+    // Hover effects
+    [playAgainButton, menuButton].forEach((button) => {
+      button.on("pointerover", () => {
+        button.setScale(1.05);
+      });
+      button.on("pointerout", () => {
+        button.setScale(1);
+      });
+    });
+
+    // Disable movement input only
+    this.cursors.left!.enabled = false;
+    this.cursors.right!.enabled = false;
+    this.cursors.up!.enabled = false;
+    this.cursors.down!.enabled = false;
   }
 }
