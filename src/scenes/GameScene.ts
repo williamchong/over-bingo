@@ -36,8 +36,8 @@ export class GameScene extends Phaser.Scene {
   private readonly GRID_SIZE = 5;
   private readonly CELL_SIZE = 80;
   private readonly EXTENDED_GRID_SIZE = 7; // 5x5 board + 1 cell on each side for stations
-  private readonly BOARD_START_X = (800 - (4 * 80)) / 2; // Center the 5x5 board horizontally
-  private readonly BOARD_START_Y = (600 - (5 * 80)) / 2; // Center the 5x5 board vertically
+  private readonly BOARD_START_X = (800 - 4 * 80) / 2; // Center the 5x5 board horizontally
+  private readonly BOARD_START_Y = (600 - 5 * 80) / 2; // Center the 5x5 board vertically
   private readonly EXTENDED_START_X = this.BOARD_START_X - this.CELL_SIZE; // Extended grid starts 1 cell to the left
   private readonly EXTENDED_START_Y = this.BOARD_START_Y - this.CELL_SIZE; // Extended grid starts 1 cell above
 
@@ -91,8 +91,10 @@ export class GameScene extends Phaser.Scene {
   private createPlayer() {
     // Start player in center of the bingo board (position 3,3 in extended grid)
     this.playerPosition = { x: 3, y: 3 };
-    const startX = this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
-    const startY = this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
+    const startX =
+      this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
+    const startY =
+      this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
 
     // Create player container
     this.player = this.add.container(startX, startY);
@@ -119,19 +121,55 @@ export class GameScene extends Phaser.Scene {
     // Create number stations evenly distributed: 3 numbers per side (avoiding operation station positions)
     const stationPositions = [
       // Left side - 3 numbers (avoiding rows 0 and 4 where operation stations are)
-      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 1 * this.CELL_SIZE, number: 1 },
-      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 2 * this.CELL_SIZE, number: 2 },
-      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 3 * this.CELL_SIZE, number: 3 },
-      
+      {
+        x: this.BOARD_START_X - this.CELL_SIZE,
+        y: this.BOARD_START_Y + 1 * this.CELL_SIZE,
+        number: 1,
+      },
+      {
+        x: this.BOARD_START_X - this.CELL_SIZE,
+        y: this.BOARD_START_Y + 2 * this.CELL_SIZE,
+        number: 2,
+      },
+      {
+        x: this.BOARD_START_X - this.CELL_SIZE,
+        y: this.BOARD_START_Y + 3 * this.CELL_SIZE,
+        number: 3,
+      },
+
       // Right side - 3 numbers (avoiding rows 0 and 4 where operation stations are)
-      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 1 * this.CELL_SIZE, number: 4 },
-      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 2 * this.CELL_SIZE, number: 5 },
-      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 3 * this.CELL_SIZE, number: 6 },
-      
+      {
+        x: this.BOARD_START_X + 5 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 1 * this.CELL_SIZE,
+        number: 4,
+      },
+      {
+        x: this.BOARD_START_X + 5 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 2 * this.CELL_SIZE,
+        number: 5,
+      },
+      {
+        x: this.BOARD_START_X + 5 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 3 * this.CELL_SIZE,
+        number: 6,
+      },
+
       // Bottom side - 3 numbers (no operation stations on bottom side)
-      { x: this.BOARD_START_X + 1 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE, number: 7 },
-      { x: this.BOARD_START_X + 2 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE, number: 8 },
-      { x: this.BOARD_START_X + 3 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE, number: 9 },
+      {
+        x: this.BOARD_START_X + 1 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 5 * this.CELL_SIZE,
+        number: 7,
+      },
+      {
+        x: this.BOARD_START_X + 2 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 5 * this.CELL_SIZE,
+        number: 8,
+      },
+      {
+        x: this.BOARD_START_X + 3 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 5 * this.CELL_SIZE,
+        number: 9,
+      },
     ];
 
     stationPositions.forEach((station) => {
@@ -163,10 +201,30 @@ export class GameScene extends Phaser.Scene {
   private createProcessingStations() {
     const stations = [
       // Operation stations on left and right sides only, relative to centered board
-      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 0 * this.CELL_SIZE, operation: "+", color: 0x9b59b6 }, // Left side, top position
-      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 4 * this.CELL_SIZE, operation: "-", color: 0xe67e22 }, // Left side, bottom position
-      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 0 * this.CELL_SIZE, operation: "×", color: 0x2980b9 }, // Right side, top position
-      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 4 * this.CELL_SIZE, operation: "÷", color: 0x8e44ad }, // Right side, bottom position - Purple (different shade)
+      {
+        x: this.BOARD_START_X - this.CELL_SIZE,
+        y: this.BOARD_START_Y + 0 * this.CELL_SIZE,
+        operation: "+",
+        color: 0x9b59b6,
+      }, // Left side, top position
+      {
+        x: this.BOARD_START_X - this.CELL_SIZE,
+        y: this.BOARD_START_Y + 4 * this.CELL_SIZE,
+        operation: "-",
+        color: 0xe67e22,
+      }, // Left side, bottom position
+      {
+        x: this.BOARD_START_X + 5 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 0 * this.CELL_SIZE,
+        operation: "×",
+        color: 0x2980b9,
+      }, // Right side, top position
+      {
+        x: this.BOARD_START_X + 5 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 4 * this.CELL_SIZE,
+        operation: "÷",
+        color: 0x8e44ad,
+      }, // Right side, bottom position - Purple (different shade)
     ];
 
     stations.forEach((stationData) => {
@@ -229,28 +287,29 @@ export class GameScene extends Phaser.Scene {
   private createUI() {
     // Called number display - centered at top, well above the board
     const centerX = this.cameras.main.width / 2;
-    
-    this.add.text(centerX, 20, "Called Number:", {
-      fontSize: "18px",
-      color: "#ecf0f1",
-    }).setOrigin(0.5);
 
-    this.calledNumberText = this.add.text(
-      centerX,
-      45,
-      this.currentCalledNumber.toString(),
-      {
+    this.add
+      .text(centerX, 20, "Called Number:", {
+        fontSize: "18px",
+        color: "#ecf0f1",
+      })
+      .setOrigin(0.5);
+
+    this.calledNumberText = this.add
+      .text(centerX, 45, this.currentCalledNumber.toString(), {
         fontSize: "32px",
         color: "#f39c12",
         fontStyle: "bold",
-      }
-    ).setOrigin(0.5);
+      })
+      .setOrigin(0.5);
 
     // Game controls reminder at bottom
-    this.add.text(centerX, this.cameras.main.height - 30, "Space: Interact", {
-      fontSize: "14px",
-      color: "#bdc3c7",
-    }).setOrigin(0.5);
+    this.add
+      .text(centerX, this.cameras.main.height - 30, "Space: Interact", {
+        fontSize: "14px",
+        color: "#bdc3c7",
+      })
+      .setOrigin(0.5);
   }
 
   private setupInput() {
@@ -295,8 +354,10 @@ export class GameScene extends Phaser.Scene {
     }
 
     if (moved) {
-      const newX = this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
-      const newY = this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
+      const newX =
+        this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
+      const newY =
+        this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
 
       this.player.setPosition(newX, newY);
     }
@@ -304,8 +365,10 @@ export class GameScene extends Phaser.Scene {
 
   private handleNumberInteraction() {
     if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
-      const playerWorldX = this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
-      const playerWorldY = this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
+      const playerWorldX =
+        this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
+      const playerWorldY =
+        this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
 
       // Check if standing exactly on a number station
       for (const station of this.numberStations) {
@@ -328,7 +391,11 @@ export class GameScene extends Phaser.Scene {
       }
 
       // Check if standing exactly on rubbish bin
-      if (this.rubbishBin && playerWorldX === this.rubbishBin.x && playerWorldY === this.rubbishBin.y) {
+      if (
+        this.rubbishBin &&
+        playerWorldX === this.rubbishBin.x &&
+        playerWorldY === this.rubbishBin.y
+      ) {
         this.handleRubbishBinInteraction();
         return;
       }
@@ -444,21 +511,16 @@ export class GameScene extends Phaser.Scene {
 
         // Create and store the number display text
         station.numberText = this.add
-          .text(
-            station.x - 20,
-            station.y + 35,
-            station.heldNumber.toString(),
-            {
-              fontSize: "14px",
-              color: "#f1c40f",
-              fontStyle: "bold",
-            }
-          )
+          .text(station.x - 20, station.y + 35, station.heldNumber.toString(), {
+            fontSize: "14px",
+            color: "#f1c40f",
+            fontStyle: "bold",
+          })
           .setOrigin(0.5);
       } else {
         // Perform operation with second number
         let result: number;
-        
+
         switch (station.operation) {
           case "+":
             result = station.heldNumber + this.playerHeldNumber;
@@ -492,13 +554,13 @@ export class GameScene extends Phaser.Scene {
       if (station.heldNumber !== null) {
         this.playerHeldNumber = station.heldNumber;
         station.heldNumber = null;
-        
+
         // Clear the number display
         if (station.numberText) {
           station.numberText.destroy();
           station.numberText = null;
         }
-        
+
         this.updateHeldNumberDisplay();
       }
     }
