@@ -33,6 +33,12 @@ export class GameScene extends Phaser.Scene {
   private boardState: (number | null)[][] = [];
   private placedNumberTexts: (Phaser.GameObjects.Text | null)[][] = [];
 
+  // Timer system
+  private startTime: number = 0;
+  private currentTime: number = 0;
+  private timerText!: Phaser.GameObjects.Text;
+  private gameStarted: boolean = false;
+
   private readonly GRID_SIZE = 5;
   private readonly CELL_SIZE = 80;
   private readonly EXTENDED_GRID_SIZE = 7; // 5x5 board + 1 cell on each side for stations
@@ -46,9 +52,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
+    // Start timer immediately when scene loads
+    this.gameStarted = true;
+    this.startTime = this.time.now;
+    this.currentTime = 0;
+
     // Initialize with first random number
     this.currentCalledNumber = this.generateRandomNumber();
-    
+
     this.createBingoBoard();
     this.createNumberStations();
     this.createProcessingStations();
@@ -306,6 +317,15 @@ export class GameScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    // Timer display (top right)
+    this.timerText = this.add
+      .text(this.cameras.main.width - 20, 20, "Time: 0:00", {
+        fontSize: "18px",
+        color: "#ecf0f1",
+        fontStyle: "bold",
+      })
+      .setOrigin(1, 0);
+
     // Game controls reminder at bottom
     this.add
       .text(centerX, this.cameras.main.height - 30, "Space: Interact", {
@@ -325,6 +345,29 @@ export class GameScene extends Phaser.Scene {
   update() {
     this.handlePlayerMovement();
     this.handleNumberInteraction();
+    this.updateTimer();
+  }
+
+  private updateTimer() {
+    if (!this.gameStarted) {
+      this.timerText.setText("Time: 0:00");
+      return;
+    }
+
+    this.currentTime = this.time.now - this.startTime;
+    const seconds = Math.floor(this.currentTime / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const displaySeconds = seconds % 60;
+
+    const timeString = `Time: ${minutes}:${displaySeconds.toString().padStart(2, "0")}`;
+    this.timerText.setText(timeString);
+  }
+
+  private startTimer() {
+    if (!this.gameStarted) {
+      this.gameStarted = true;
+      this.startTime = this.time.now;
+    }
   }
 
   private handlePlayerMovement() {
@@ -494,7 +537,7 @@ export class GameScene extends Phaser.Scene {
   private callNewNumber() {
     this.currentCalledNumber = this.generateRandomNumber();
     this.calledNumberText.setText(this.currentCalledNumber.toString());
-    
+
     // Shuffle station positions when new number is called
     this.shuffleNumberStations();
     this.shuffleOperationStations();
@@ -504,19 +547,46 @@ export class GameScene extends Phaser.Scene {
     // Get all number station positions
     const positions = [
       // Left side positions
-      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 1 * this.CELL_SIZE },
-      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 2 * this.CELL_SIZE },
-      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 3 * this.CELL_SIZE },
-      
+      {
+        x: this.BOARD_START_X - this.CELL_SIZE,
+        y: this.BOARD_START_Y + 1 * this.CELL_SIZE,
+      },
+      {
+        x: this.BOARD_START_X - this.CELL_SIZE,
+        y: this.BOARD_START_Y + 2 * this.CELL_SIZE,
+      },
+      {
+        x: this.BOARD_START_X - this.CELL_SIZE,
+        y: this.BOARD_START_Y + 3 * this.CELL_SIZE,
+      },
+
       // Right side positions
-      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 1 * this.CELL_SIZE },
-      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 2 * this.CELL_SIZE },
-      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 3 * this.CELL_SIZE },
-      
+      {
+        x: this.BOARD_START_X + 5 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 1 * this.CELL_SIZE,
+      },
+      {
+        x: this.BOARD_START_X + 5 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 2 * this.CELL_SIZE,
+      },
+      {
+        x: this.BOARD_START_X + 5 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 3 * this.CELL_SIZE,
+      },
+
       // Bottom side positions
-      { x: this.BOARD_START_X + 1 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE },
-      { x: this.BOARD_START_X + 2 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE },
-      { x: this.BOARD_START_X + 3 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE },
+      {
+        x: this.BOARD_START_X + 1 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 5 * this.CELL_SIZE,
+      },
+      {
+        x: this.BOARD_START_X + 2 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 5 * this.CELL_SIZE,
+      },
+      {
+        x: this.BOARD_START_X + 3 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 5 * this.CELL_SIZE,
+      },
     ];
 
     // Shuffle the positions array
@@ -536,10 +606,22 @@ export class GameScene extends Phaser.Scene {
   private shuffleOperationStations() {
     // Get all operation station positions
     const positions = [
-      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 0 * this.CELL_SIZE }, // Left top
-      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 4 * this.CELL_SIZE }, // Left bottom
-      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 0 * this.CELL_SIZE }, // Right top
-      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 4 * this.CELL_SIZE }, // Right bottom
+      {
+        x: this.BOARD_START_X - this.CELL_SIZE,
+        y: this.BOARD_START_Y + 0 * this.CELL_SIZE,
+      }, // Left top
+      {
+        x: this.BOARD_START_X - this.CELL_SIZE,
+        y: this.BOARD_START_Y + 4 * this.CELL_SIZE,
+      }, // Left bottom
+      {
+        x: this.BOARD_START_X + 5 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 0 * this.CELL_SIZE,
+      }, // Right top
+      {
+        x: this.BOARD_START_X + 5 * this.CELL_SIZE,
+        y: this.BOARD_START_Y + 4 * this.CELL_SIZE,
+      }, // Right bottom
     ];
 
     // Shuffle the positions array
@@ -553,7 +635,7 @@ export class GameScene extends Phaser.Scene {
       station.x = positions[index].x;
       station.y = positions[index].y;
       station.obj.setPosition(station.x, station.y);
-      
+
       // If station has a number display, update its position too
       if (station.numberText) {
         station.numberText.setPosition(station.x - 20, station.y + 35);
@@ -727,18 +809,27 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handleBingo() {
+    // Stop the timer
+    this.gameStarted = false;
+
     const centerX = this.cameras.main.width / 2;
     const centerY = this.cameras.main.height / 2;
 
     // Create full-screen dark overlay
     const fullOverlay = this.add
-      .rectangle(centerX, centerY, this.cameras.main.width, this.cameras.main.height, 0x000000)
+      .rectangle(
+        centerX,
+        centerY,
+        this.cameras.main.width,
+        this.cameras.main.height,
+        0x000000
+      )
       .setAlpha(0.7)
       .setOrigin(0.5);
 
-    // Create modal dialog background
+    // Create modal dialog background (increased height for completion time)
     const modalBg = this.add
-      .rectangle(centerX, centerY, 450, 350, 0x34495e)
+      .rectangle(centerX, centerY, 450, 420, 0x34495e)
       .setOrigin(0.5)
       .setStrokeStyle(4, 0x2c3e50);
 
@@ -766,30 +857,45 @@ export class GameScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // Play again button with better positioning
+    // Display completion time
+    const completionTime = this.currentTime;
+    const seconds = Math.floor(completionTime / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const displaySeconds = seconds % 60;
+    const timeString = `${minutes}:${displaySeconds.toString().padStart(2, "0")}`;
+
+    this.add
+      .text(centerX, centerY + 40, `Completion Time: ${timeString}`, {
+        fontSize: "20px",
+        color: "#f39c12",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+
+    // Play again button with better positioning (adjusted for completion time)
     const playAgainButton = this.add
-      .rectangle(centerX, centerY + 70, 180, 50, 0x27ae60)
+      .rectangle(centerX, centerY + 100, 180, 50, 0x27ae60)
       .setInteractive()
       .setStrokeStyle(3, 0x2ecc71)
       .setOrigin(0.5);
 
     this.add
-      .text(centerX, centerY + 70, "PLAY AGAIN", {
+      .text(centerX, centerY + 100, "PLAY AGAIN", {
         fontSize: "18px",
         color: "#ecf0f1",
         fontStyle: "bold",
       })
       .setOrigin(0.5);
 
-    // Menu button with better positioning
+    // Menu button with better positioning (adjusted for completion time)
     const menuButton = this.add
-      .rectangle(centerX, centerY + 130, 180, 50, 0xe74c3c)
+      .rectangle(centerX, centerY + 160, 180, 50, 0xe74c3c)
       .setInteractive()
       .setStrokeStyle(3, 0xc0392b)
       .setOrigin(0.5);
 
     this.add
-      .text(centerX, centerY + 130, "MAIN MENU", {
+      .text(centerX, centerY + 160, "MAIN MENU", {
         fontSize: "18px",
         color: "#ecf0f1",
         fontStyle: "bold",
