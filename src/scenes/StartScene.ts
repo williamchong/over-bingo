@@ -105,12 +105,29 @@ export class StartScene extends Phaser.Scene {
       tutorialButton.setFillStyle(0x3498db);
     });
 
-    // Version/credit text
-    this.add
-      .text(centerX, this.cameras.main.height - 30, "Milestone 1 MVP", {
+    // Version/credit text (clickable)
+    const versionText = this.add
+      .text(centerX, this.cameras.main.height - 30, "Milestone 2 MVP", {
         fontSize: "12px",
         color: "#95a5a6",
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setInteractive();
+
+    // Add hover effects for the version text
+    versionText.on("pointerover", () => {
+      versionText.setStyle({ color: "#3498db" });
+      this.input.setDefaultCursor("pointer");
+    });
+
+    versionText.on("pointerout", () => {
+      versionText.setStyle({ color: "#95a5a6" });
+      this.input.setDefaultCursor("default");
+    });
+
+    // Open GitHub repo when clicked
+    versionText.on("pointerdown", () => {
+      window.open("https://github.com/williamchong/over-bingo", "_blank");
+    });
   }
 }
