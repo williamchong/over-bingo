@@ -1,0 +1,11 @@
+{
+  "name": "over-bingo",
+  "version": "1.0.0",
+  "description": "Of course\\! This is a fantastic game concept with a lot of potential. It's wise to get organized from the start.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
