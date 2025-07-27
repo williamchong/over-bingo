@@ -8,7 +8,7 @@ export class GameScene extends Phaser.Scene {
   private playerPosition = { x: 2, y: 2 }; // Start in center of 5x5 grid
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private calledNumberText!: Phaser.GameObjects.Text;
-  private currentCalledNumber = 7; // Starting number for testing (3+4)
+  private currentCalledNumber: number;
   private numberStations: {
     x: number;
     y: number;
@@ -46,6 +46,9 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
+    // Initialize with first random number
+    this.currentCalledNumber = this.generateRandomNumber();
+    
     this.createBingoBoard();
     this.createNumberStations();
     this.createProcessingStations();
@@ -483,14 +486,13 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private callNewNumber() {
-    // Simple demo: cycle through numbers that can be made with addition
-    // 7 = 3+4, 15 = 7+8, 8 = 3+5, 12 = 4+8, 9 = 4+5
-    const testNumbers = [7, 15, 8, 12, 9];
-    const currentIndex = testNumbers.indexOf(this.currentCalledNumber);
-    const nextIndex = (currentIndex + 1) % testNumbers.length;
+  private generateRandomNumber(): number {
+    // Generate random number between 1 and 25 (reasonable range for bingo)
+    return Math.floor(Math.random() * 25) + 1;
+  }
 
-    this.currentCalledNumber = testNumbers[nextIndex];
+  private callNewNumber() {
+    this.currentCalledNumber = this.generateRandomNumber();
     this.calledNumberText.setText(this.currentCalledNumber.toString());
   }
 
