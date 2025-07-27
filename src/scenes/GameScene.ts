@@ -35,8 +35,8 @@ export class GameScene extends Phaser.Scene {
 
   private readonly GRID_SIZE = 5;
   private readonly CELL_SIZE = 80;
-  private readonly BOARD_START_X = 400 - (5 * 80) / 2; // Center horizontally (800/2 - boardWidth/2)
-  private readonly BOARD_START_Y = 300 - (5 * 80) / 2; // Center vertically (600/2 - boardHeight/2)
+  private readonly BOARD_START_X = (800 - (4 * 80)) / 2; // Center horizontally: (screenWidth - boardWidth) / 2
+  private readonly BOARD_START_Y = (600 - (4 * 80)) / 2; // Center vertically: (screenHeight - boardHeight) / 2
 
   constructor() {
     super({ key: "GameScene" });
@@ -221,20 +221,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createUI() {
-    // Called number display - centered at top like a title
+    // Called number display - centered at top, well above the board
     const centerX = this.cameras.main.width / 2;
     
-    this.add.text(centerX, 30, "Called Number:", {
-      fontSize: "20px",
+    this.add.text(centerX, 20, "Called Number:", {
+      fontSize: "18px",
       color: "#ecf0f1",
     }).setOrigin(0.5);
 
     this.calledNumberText = this.add.text(
       centerX,
-      60,
+      45,
       this.currentCalledNumber.toString(),
       {
-        fontSize: "36px",
+        fontSize: "32px",
         color: "#f39c12",
         fontStyle: "bold",
       }
