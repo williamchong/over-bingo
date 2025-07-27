@@ -22,6 +22,11 @@ export class GameScene extends Phaser.Scene {
     heldNumber: number | null;
     numberText: Phaser.GameObjects.Text | null;
   } | null = null;
+  private rubbishBin: {
+    x: number;
+    y: number;
+    obj: Phaser.GameObjects.Container;
+  } | null = null;
   private playerHeldNumber: number | null = null;
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private boardState: (number | null)[][] = [];
@@ -41,6 +46,7 @@ export class GameScene extends Phaser.Scene {
     this.createPlayer();
     this.createNumberStations();
     this.createProcessingStation();
+    this.createRubbishBin();
     this.createUI();
     this.setupInput();
   }
@@ -171,6 +177,34 @@ export class GameScene extends Phaser.Scene {
     };
   }
 
+  private createRubbishBin() {
+    const binX = 650;
+    const binY = 150;
+
+    const container = this.add.container(binX, binY);
+
+    // Bin background (dark gray)
+    const bg = this.add.rectangle(0, 0, 70, 70, 0x34495e);
+
+    // Bin lid (slightly lighter)
+    const lid = this.add.rectangle(0, -25, 80, 15, 0x5d6d7e);
+
+    // Trash symbol
+    const trashText = this.add
+      .text(0, 5, "🗑", {
+        fontSize: "24px",
+      })
+      .setOrigin(0.5);
+
+    container.add([bg, lid, trashText]);
+
+    this.rubbishBin = {
+      x: binX,
+      y: binY,
+      obj: container,
+    };
+  }
+
   private createUI() {
     // Called number display
     this.add.text(50, 50, "Called Number:", {
@@ -188,7 +222,6 @@ export class GameScene extends Phaser.Scene {
         fontStyle: "bold",
       }
     );
-
 
     // Game controls reminder (minimal)
     this.add.text(50, 120, "Space: Interact", {
@@ -286,6 +319,21 @@ export class GameScene extends Phaser.Scene {
 
         if (distance < 100) {
           this.handleProcessingStationInteraction();
+          return;
+        }
+      }
+
+      // Check rubbish bin
+      if (this.rubbishBin) {
+        const distance = Phaser.Math.Distance.Between(
+          playerWorldX,
+          playerWorldY,
+          this.rubbishBin.x,
+          this.rubbishBin.y
+        );
+
+        if (distance < 150) {
+          this.handleRubbishBinInteraction();
           return;
         }
       }
@@ -419,15 +467,60 @@ export class GameScene extends Phaser.Scene {
       if (this.processingStation.heldNumber !== null) {
         this.playerHeldNumber = this.processingStation.heldNumber;
         this.processingStation.heldNumber = null;
-        
+
         // Clear the number display
         if (this.processingStation.numberText) {
           this.processingStation.numberText.destroy();
           this.processingStation.numberText = null;
         }
-        
+
         this.updateHeldNumberDisplay();
       }
+    }
+  }
+
+  private handleRubbishBinInteraction() {
+    if (!this.rubbishBin) return;
+
+    // Only allow disposing if player is holding a number
+    if (this.playerHeldNumber !== null) {
+      // Visual feedback - flash the bin
+      const binObj = this.rubbishBin.obj;
+      binObj.setScale(1.1);
+
+      // Create disposal effect
+      const disposalText = this.add
+        .text(
+          this.rubbishBin.x,
+          this.rubbishBin.y - 40,
+          "-" + this.playerHeldNumber,
+          {
+            fontSize: "16px",
+            color: "#e74c3c",
+            fontStyle: "bold",
+          }
+        )
+        .setOrigin(0.5);
+
+      // Animate disposal text
+      this.tweens.add({
+        targets: disposalText,
+        y: this.rubbishBin.y - 80,
+        alpha: 0,
+        duration: 1000,
+        onComplete: () => {
+          disposalText.destroy();
+        },
+      });
+
+      // Reset bin scale
+      this.time.delayedCall(200, () => {
+        binObj.setScale(1);
+      });
+
+      // Destroy the held number
+      this.playerHeldNumber = null;
+      this.updateHeldNumberDisplay();
     }
   }
 
