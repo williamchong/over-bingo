@@ -33,7 +33,7 @@
     "browser-game"
   ],
   "author": "williamchong",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@types/node": "^20.0.0",
@@ -49,6 +49,6 @@
     "vite": "^5.0.0"
   },
   "dependencies": {
-    "phaser": "^3.70.0"
+    "phaser": "^3.90.0"
   }
 }
