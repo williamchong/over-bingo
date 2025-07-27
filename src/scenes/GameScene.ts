@@ -8,7 +8,7 @@ export class GameScene extends Phaser.Scene {
   private playerPosition = { x: 2, y: 2 }; // Start in center of 5x5 grid
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private calledNumberText!: Phaser.GameObjects.Text;
-  private currentCalledNumber: number;
+  private currentCalledNumber: number = 0;
   private numberStations: {
     x: number;
     y: number;
@@ -494,6 +494,71 @@ export class GameScene extends Phaser.Scene {
   private callNewNumber() {
     this.currentCalledNumber = this.generateRandomNumber();
     this.calledNumberText.setText(this.currentCalledNumber.toString());
+    
+    // Shuffle station positions when new number is called
+    this.shuffleNumberStations();
+    this.shuffleOperationStations();
+  }
+
+  private shuffleNumberStations() {
+    // Get all number station positions
+    const positions = [
+      // Left side positions
+      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 1 * this.CELL_SIZE },
+      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 2 * this.CELL_SIZE },
+      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 3 * this.CELL_SIZE },
+      
+      // Right side positions
+      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 1 * this.CELL_SIZE },
+      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 2 * this.CELL_SIZE },
+      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 3 * this.CELL_SIZE },
+      
+      // Bottom side positions
+      { x: this.BOARD_START_X + 1 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE },
+      { x: this.BOARD_START_X + 2 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE },
+      { x: this.BOARD_START_X + 3 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE },
+    ];
+
+    // Shuffle the positions array
+    for (let i = positions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [positions[i], positions[j]] = [positions[j], positions[i]];
+    }
+
+    // Update station positions
+    this.numberStations.forEach((station, index) => {
+      station.x = positions[index].x;
+      station.y = positions[index].y;
+      station.obj.setPosition(station.x, station.y);
+    });
+  }
+
+  private shuffleOperationStations() {
+    // Get all operation station positions
+    const positions = [
+      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 0 * this.CELL_SIZE }, // Left top
+      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 4 * this.CELL_SIZE }, // Left bottom
+      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 0 * this.CELL_SIZE }, // Right top
+      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 4 * this.CELL_SIZE }, // Right bottom
+    ];
+
+    // Shuffle the positions array
+    for (let i = positions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [positions[i], positions[j]] = [positions[j], positions[i]];
+    }
+
+    // Update operation station positions
+    this.processingStations.forEach((station, index) => {
+      station.x = positions[index].x;
+      station.y = positions[index].y;
+      station.obj.setPosition(station.x, station.y);
+      
+      // If station has a number display, update its position too
+      if (station.numberText) {
+        station.numberText.setPosition(station.x - 20, station.y + 35);
+      }
+    });
   }
 
   private handleProcessingStationInteraction(station: {
