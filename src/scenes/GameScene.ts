@@ -7,6 +7,12 @@ export class GameScene extends Phaser.Scene {
   private bingoBoard: Phaser.GameObjects.Rectangle[][] = [];
   private playerPosition = { x: 2, y: 2 }; // Start in center of 5x5 grid
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+  private wasdKeys!: {
+    W: Phaser.Input.Keyboard.Key;
+    A: Phaser.Input.Keyboard.Key;
+    S: Phaser.Input.Keyboard.Key;
+    D: Phaser.Input.Keyboard.Key;
+  };
   private calledNumberText!: Phaser.GameObjects.Text;
   private currentCalledNumber: number = 0;
   private numberStations: {
@@ -30,6 +36,7 @@ export class GameScene extends Phaser.Scene {
   } | null = null;
   private playerHeldNumber: number | null = null;
   private spaceKey!: Phaser.Input.Keyboard.Key;
+  private enterKey!: Phaser.Input.Keyboard.Key;
   private boardState: (number | null)[][] = [];
   private placedNumberTexts: (Phaser.GameObjects.Text | null)[][] = [];
 
@@ -328,17 +335,31 @@ export class GameScene extends Phaser.Scene {
 
     // Game controls reminder at bottom
     this.add
-      .text(centerX, this.cameras.main.height - 30, "Space: Interact", {
-        fontSize: "14px",
-        color: "#bdc3c7",
-      })
+      .text(
+        centerX,
+        this.cameras.main.height - 30,
+        "Arrow Keys: Move • Space: Interact",
+        {
+          fontSize: "14px",
+          color: "#bdc3c7",
+        },
+      )
       .setOrigin(0.5);
   }
 
   private setupInput() {
     this.cursors = this.input.keyboard!.createCursorKeys();
+    this.wasdKeys = this.input.keyboard!.addKeys("W,S,A,D") as {
+      W: Phaser.Input.Keyboard.Key;
+      A: Phaser.Input.Keyboard.Key;
+      S: Phaser.Input.Keyboard.Key;
+      D: Phaser.Input.Keyboard.Key;
+    };
     this.spaceKey = this.input.keyboard!.addKey(
       Phaser.Input.Keyboard.KeyCodes.SPACE,
+    );
+    this.enterKey = this.input.keyboard!.addKey(
+      Phaser.Input.Keyboard.KeyCodes.ENTER,
     );
   }
 
@@ -366,26 +387,37 @@ export class GameScene extends Phaser.Scene {
   private handlePlayerMovement() {
     let moved = false;
 
+    // Check left movement (Arrow Left or A)
     if (
-      Phaser.Input.Keyboard.JustDown(this.cursors.left!) &&
+      (Phaser.Input.Keyboard.JustDown(this.cursors.left!) ||
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.A)) &&
       this.playerPosition.x > 0
     ) {
       this.playerPosition.x--;
       moved = true;
-    } else if (
-      Phaser.Input.Keyboard.JustDown(this.cursors.right!) &&
+    }
+    // Check right movement (Arrow Right or D)
+    else if (
+      (Phaser.Input.Keyboard.JustDown(this.cursors.right!) ||
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.D)) &&
       this.playerPosition.x < this.EXTENDED_GRID_SIZE - 1
     ) {
       this.playerPosition.x++;
       moved = true;
-    } else if (
-      Phaser.Input.Keyboard.JustDown(this.cursors.up!) &&
+    }
+    // Check up movement (Arrow Up or W)
+    else if (
+      (Phaser.Input.Keyboard.JustDown(this.cursors.up!) ||
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.W)) &&
       this.playerPosition.y > 0
     ) {
       this.playerPosition.y--;
       moved = true;
-    } else if (
-      Phaser.Input.Keyboard.JustDown(this.cursors.down!) &&
+    }
+    // Check down movement (Arrow Down or S)
+    else if (
+      (Phaser.Input.Keyboard.JustDown(this.cursors.down!) ||
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.S)) &&
       this.playerPosition.y < this.EXTENDED_GRID_SIZE - 1
     ) {
       this.playerPosition.y++;
@@ -403,7 +435,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handleNumberInteraction() {
-    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+    if (
+      Phaser.Input.Keyboard.JustDown(this.spaceKey) ||
+      Phaser.Input.Keyboard.JustDown(this.enterKey)
+    ) {
       const playerWorldX =
         this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
       const playerWorldY =
