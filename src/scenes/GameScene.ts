@@ -1,11 +1,15 @@
 import Phaser from "phaser";
 
 export class GameScene extends Phaser.Scene {
-  private player!: Phaser.GameObjects.Container;
-  private playerRect!: Phaser.GameObjects.Rectangle;
-  private playerNumberText!: Phaser.GameObjects.Text;
+  private player1!: Phaser.GameObjects.Container;
+  private player1Rect!: Phaser.GameObjects.Rectangle;
+  private player1NumberText!: Phaser.GameObjects.Text;
+  private player2!: Phaser.GameObjects.Container;
+  private player2Rect!: Phaser.GameObjects.Rectangle;
+  private player2NumberText!: Phaser.GameObjects.Text;
   private bingoBoard: Phaser.GameObjects.Rectangle[][] = [];
-  private playerPosition = { x: 2, y: 2 }; // Start in center of 5x5 grid
+  private player1Position = { x: 2, y: 2 };
+  private player2Position = { x: 3, y: 3 };
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasdKeys!: {
     W: Phaser.Input.Keyboard.Key;
@@ -34,11 +38,14 @@ export class GameScene extends Phaser.Scene {
     y: number;
     obj: Phaser.GameObjects.Container;
   } | null = null;
-  private playerHeldNumber: number | null = null;
+  private player1HeldNumber: number | null = null;
+  private player2HeldNumber: number | null = null;
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private enterKey!: Phaser.Input.Keyboard.Key;
-  private boardState: (number | null)[][] = [];
+  private boardState: (number | "p1" | "p2" | null)[][] = [];
   private placedNumberTexts: (Phaser.GameObjects.Text | null)[][] = [];
+  private gameMode: "single" | "vs" = "single";
+  private isEndgameMode: boolean = false;
 
   // Timer system
   private startTime: number = 0;
@@ -58,11 +65,19 @@ export class GameScene extends Phaser.Scene {
     super({ key: "GameScene" });
   }
 
-  create() {
-    // Start timer immediately when scene loads
-    this.gameStarted = true;
-    this.startTime = this.time.now;
-    this.currentTime = 0;
+  create(data?: { gameMode?: string }) {
+    // Set game mode from scene data
+    this.gameMode = (data?.gameMode as "single" | "vs") || "single";
+    this.isEndgameMode = false;
+
+    // Start timer only for single player mode
+    if (this.gameMode === "single") {
+      this.gameStarted = true;
+      this.startTime = this.time.now;
+      this.currentTime = 0;
+    } else {
+      this.gameStarted = false;
+    }
 
     // Initialize with first random number
     this.currentCalledNumber = this.generateRandomNumber();
@@ -71,7 +86,7 @@ export class GameScene extends Phaser.Scene {
     this.createNumberStations();
     this.createProcessingStations();
     this.createRubbishBin();
-    this.createPlayer(); // Create player last so it renders on top
+    this.createPlayers();
     this.createUI();
     this.setupInput();
   }
@@ -109,33 +124,75 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private createPlayer() {
-    // Start player in center of the bingo board (position 3,3 in extended grid)
-    this.playerPosition = { x: 3, y: 3 };
-    const startX =
-      this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
-    const startY =
-      this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
+  private createPlayers() {
+    if (this.gameMode === "single") {
+      // Single player mode - only create player 1
+      this.player1Position = { x: 3, y: 3 };
+      const startX =
+        this.EXTENDED_START_X + this.player1Position.x * this.CELL_SIZE;
+      const startY =
+        this.EXTENDED_START_Y + this.player1Position.y * this.CELL_SIZE;
 
-    // Create player container
-    this.player = this.add.container(startX, startY);
+      this.player1 = this.add.container(startX, startY);
+      this.player1Rect = this.add.rectangle(0, 0, 20, 20, 0xe74c3c);
+      this.player1Rect.setAlpha(0.7);
 
-    // Player rectangle (semi-transparent)
-    this.playerRect = this.add.rectangle(0, 0, 20, 20, 0xe74c3c);
-    this.playerRect.setAlpha(0.7); // Make player semi-transparent
+      this.player1NumberText = this.add
+        .text(0, -15, "", {
+          fontSize: "12px",
+          color: "#f1c40f",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5)
+        .setVisible(false);
 
-    // Number text (initially hidden)
-    this.playerNumberText = this.add
-      .text(0, -15, "", {
-        fontSize: "12px",
-        color: "#f1c40f",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5)
-      .setVisible(false);
+      this.player1.add([this.player1Rect, this.player1NumberText]);
+    } else {
+      // VS mode - create both players
+      // Player 1 (red, WASD+Space)
+      this.player1Position = { x: 2, y: 2 };
+      const p1StartX =
+        this.EXTENDED_START_X + this.player1Position.x * this.CELL_SIZE;
+      const p1StartY =
+        this.EXTENDED_START_Y + this.player1Position.y * this.CELL_SIZE;
 
-    // Add components to container
-    this.player.add([this.playerRect, this.playerNumberText]);
+      this.player1 = this.add.container(p1StartX, p1StartY);
+      this.player1Rect = this.add.rectangle(0, 0, 18, 18, 0xe74c3c);
+      this.player1Rect.setAlpha(0.8);
+
+      this.player1NumberText = this.add
+        .text(0, -15, "", {
+          fontSize: "11px",
+          color: "#f1c40f",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5)
+        .setVisible(false);
+
+      this.player1.add([this.player1Rect, this.player1NumberText]);
+
+      // Player 2 (blue, Arrow+Enter)
+      this.player2Position = { x: 3, y: 3 };
+      const p2StartX =
+        this.EXTENDED_START_X + this.player2Position.x * this.CELL_SIZE;
+      const p2StartY =
+        this.EXTENDED_START_Y + this.player2Position.y * this.CELL_SIZE;
+
+      this.player2 = this.add.container(p2StartX, p2StartY);
+      this.player2Rect = this.add.rectangle(0, 0, 18, 18, 0x3498db);
+      this.player2Rect.setAlpha(0.8);
+
+      this.player2NumberText = this.add
+        .text(0, -15, "", {
+          fontSize: "11px",
+          color: "#f39c12",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5)
+        .setVisible(false);
+
+      this.player2.add([this.player2Rect, this.player2NumberText]);
+    }
   }
 
   private createNumberStations() {
@@ -201,7 +258,8 @@ export class GameScene extends Phaser.Scene {
       const minGreen = 80;
       const maxGreen = 200;
       const greenRange = maxGreen - minGreen;
-      const greenIntensity = minGreen + Math.floor(((10 - station.number) / 9) * greenRange);
+      const greenIntensity =
+        minGreen + Math.floor(((10 - station.number) / 9) * greenRange);
       const greenColor = (greenIntensity << 8) | 0x001000; // Green channel + minimal base
       const bg = this.add.rectangle(0, 0, 60, 40, greenColor);
 
@@ -330,27 +388,73 @@ export class GameScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // Timer display (top right)
-    this.timerText = this.add
-      .text(this.cameras.main.width - 20, 20, "Time: 0:00", {
-        fontSize: "18px",
-        color: "#ecf0f1",
-        fontStyle: "bold",
-      })
-      .setOrigin(1, 0);
+    if (this.gameMode === "single") {
+      // Timer display (top right) - single player only
+      this.timerText = this.add
+        .text(this.cameras.main.width - 20, 20, "Time: 0:00", {
+          fontSize: "18px",
+          color: "#ecf0f1",
+          fontStyle: "bold",
+        })
+        .setOrigin(1, 0);
 
-    // Game controls reminder at bottom
-    this.add
-      .text(
-        centerX,
-        this.cameras.main.height - 30,
-        "Arrow Keys: Move • Space: Interact",
-        {
-          fontSize: "14px",
+      // Single player controls
+      this.add
+        .text(
+          centerX,
+          this.cameras.main.height - 30,
+          "Arrow Keys/WASD: Move • Space/Enter: Interact",
+          {
+            fontSize: "14px",
+            color: "#bdc3c7",
+          },
+        )
+        .setOrigin(0.5);
+    } else {
+      // VS mode - show player indicators
+      this.add
+        .text(20, 20, "Player 1", {
+          fontSize: "18px",
+          color: "#e74c3c",
+          fontStyle: "bold",
+        })
+        .setOrigin(0, 0);
+
+      this.add
+        .text(20, 40, "WASD + Space", {
+          fontSize: "12px",
           color: "#bdc3c7",
-        },
-      )
-      .setOrigin(0.5);
+        })
+        .setOrigin(0, 0);
+
+      this.add
+        .text(this.cameras.main.width - 20, 20, "Player 2", {
+          fontSize: "18px",
+          color: "#3498db",
+          fontStyle: "bold",
+        })
+        .setOrigin(1, 0);
+
+      this.add
+        .text(this.cameras.main.width - 20, 40, "Arrows + Enter", {
+          fontSize: "12px",
+          color: "#bdc3c7",
+        })
+        .setOrigin(1, 0);
+
+      // VS mode controls reminder
+      this.add
+        .text(
+          centerX,
+          this.cameras.main.height - 30,
+          "First to get BINGO wins! Block opponents by placing numbers.",
+          {
+            fontSize: "14px",
+            color: "#bdc3c7",
+          },
+        )
+        .setOrigin(0.5);
+    }
   }
 
   private setupInput() {
@@ -372,7 +476,9 @@ export class GameScene extends Phaser.Scene {
   update() {
     this.handlePlayerMovement();
     this.handleNumberInteraction();
-    this.updateTimer();
+    if (this.gameMode === "single") {
+      this.updateTimer();
+    }
   }
 
   private updateTimer() {
@@ -391,174 +497,327 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handlePlayerMovement() {
-    let moved = false;
+    if (this.gameMode === "single") {
+      // Single player movement (both WASD and Arrow keys)
+      let moved = false;
 
-    // Check left movement (Arrow Left or A)
-    if (
-      (Phaser.Input.Keyboard.JustDown(this.cursors.left!) ||
-        Phaser.Input.Keyboard.JustDown(this.wasdKeys.A)) &&
-      this.playerPosition.x > 0
-    ) {
-      this.playerPosition.x--;
-      moved = true;
-    }
-    // Check right movement (Arrow Right or D)
-    else if (
-      (Phaser.Input.Keyboard.JustDown(this.cursors.right!) ||
-        Phaser.Input.Keyboard.JustDown(this.wasdKeys.D)) &&
-      this.playerPosition.x < this.EXTENDED_GRID_SIZE - 1
-    ) {
-      this.playerPosition.x++;
-      moved = true;
-    }
-    // Check up movement (Arrow Up or W)
-    else if (
-      (Phaser.Input.Keyboard.JustDown(this.cursors.up!) ||
-        Phaser.Input.Keyboard.JustDown(this.wasdKeys.W)) &&
-      this.playerPosition.y > 0
-    ) {
-      this.playerPosition.y--;
-      moved = true;
-    }
-    // Check down movement (Arrow Down or S)
-    else if (
-      (Phaser.Input.Keyboard.JustDown(this.cursors.down!) ||
-        Phaser.Input.Keyboard.JustDown(this.wasdKeys.S)) &&
-      this.playerPosition.y < this.EXTENDED_GRID_SIZE - 1
-    ) {
-      this.playerPosition.y++;
-      moved = true;
-    }
+      if (
+        (Phaser.Input.Keyboard.JustDown(this.cursors.left!) ||
+          Phaser.Input.Keyboard.JustDown(this.wasdKeys.A)) &&
+        this.player1Position.x > 0
+      ) {
+        this.player1Position.x--;
+        moved = true;
+      } else if (
+        (Phaser.Input.Keyboard.JustDown(this.cursors.right!) ||
+          Phaser.Input.Keyboard.JustDown(this.wasdKeys.D)) &&
+        this.player1Position.x < this.EXTENDED_GRID_SIZE - 1
+      ) {
+        this.player1Position.x++;
+        moved = true;
+      } else if (
+        (Phaser.Input.Keyboard.JustDown(this.cursors.up!) ||
+          Phaser.Input.Keyboard.JustDown(this.wasdKeys.W)) &&
+        this.player1Position.y > 0
+      ) {
+        this.player1Position.y--;
+        moved = true;
+      } else if (
+        (Phaser.Input.Keyboard.JustDown(this.cursors.down!) ||
+          Phaser.Input.Keyboard.JustDown(this.wasdKeys.S)) &&
+        this.player1Position.y < this.EXTENDED_GRID_SIZE - 1
+      ) {
+        this.player1Position.y++;
+        moved = true;
+      }
 
-    if (moved) {
-      const newX =
-        this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
-      const newY =
-        this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
+      if (moved) {
+        const newX =
+          this.EXTENDED_START_X + this.player1Position.x * this.CELL_SIZE;
+        const newY =
+          this.EXTENDED_START_Y + this.player1Position.y * this.CELL_SIZE;
+        this.player1.setPosition(newX, newY);
+      }
+    } else {
+      // VS mode - separate controls for each player
+      let p1Moved = false;
+      let p2Moved = false;
 
-      this.player.setPosition(newX, newY);
+      // Player 1 movement (WASD)
+      if (
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.A) &&
+        this.player1Position.x > 0
+      ) {
+        this.player1Position.x--;
+        p1Moved = true;
+      } else if (
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.D) &&
+        this.player1Position.x < this.EXTENDED_GRID_SIZE - 1
+      ) {
+        this.player1Position.x++;
+        p1Moved = true;
+      } else if (
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.W) &&
+        this.player1Position.y > 0
+      ) {
+        this.player1Position.y--;
+        p1Moved = true;
+      } else if (
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.S) &&
+        this.player1Position.y < this.EXTENDED_GRID_SIZE - 1
+      ) {
+        this.player1Position.y++;
+        p1Moved = true;
+      }
+
+      // Player 2 movement (Arrow keys)
+      if (
+        Phaser.Input.Keyboard.JustDown(this.cursors.left!) &&
+        this.player2Position.x > 0
+      ) {
+        this.player2Position.x--;
+        p2Moved = true;
+      } else if (
+        Phaser.Input.Keyboard.JustDown(this.cursors.right!) &&
+        this.player2Position.x < this.EXTENDED_GRID_SIZE - 1
+      ) {
+        this.player2Position.x++;
+        p2Moved = true;
+      } else if (
+        Phaser.Input.Keyboard.JustDown(this.cursors.up!) &&
+        this.player2Position.y > 0
+      ) {
+        this.player2Position.y--;
+        p2Moved = true;
+      } else if (
+        Phaser.Input.Keyboard.JustDown(this.cursors.down!) &&
+        this.player2Position.y < this.EXTENDED_GRID_SIZE - 1
+      ) {
+        this.player2Position.y++;
+        p2Moved = true;
+      }
+
+      if (p1Moved) {
+        const newX =
+          this.EXTENDED_START_X + this.player1Position.x * this.CELL_SIZE;
+        const newY =
+          this.EXTENDED_START_Y + this.player1Position.y * this.CELL_SIZE;
+        this.player1.setPosition(newX, newY);
+      }
+
+      if (p2Moved) {
+        const newX =
+          this.EXTENDED_START_X + this.player2Position.x * this.CELL_SIZE;
+        const newY =
+          this.EXTENDED_START_Y + this.player2Position.y * this.CELL_SIZE;
+        this.player2.setPosition(newX, newY);
+      }
     }
   }
 
   private handleNumberInteraction() {
+    // Handle Player 1 interaction (Space key)
+    if (Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+      this.handlePlayerInteraction(1);
+    }
+
+    // Handle Player 2 interaction (Enter key) - only in VS mode
     if (
-      Phaser.Input.Keyboard.JustDown(this.spaceKey) ||
+      this.gameMode === "vs" &&
       Phaser.Input.Keyboard.JustDown(this.enterKey)
     ) {
-      const playerWorldX =
-        this.EXTENDED_START_X + this.playerPosition.x * this.CELL_SIZE;
-      const playerWorldY =
-        this.EXTENDED_START_Y + this.playerPosition.y * this.CELL_SIZE;
+      this.handlePlayerInteraction(2);
+    }
 
-      // Check if standing exactly on a number station
-      for (const station of this.numberStations) {
-        if (playerWorldX === station.x && playerWorldY === station.y) {
-          if (this.playerHeldNumber === null) {
-            // Pick up number
-            this.playerHeldNumber = station.number;
-            this.updateHeldNumberDisplay();
+    // In single player mode, also allow Enter key for player 1
+    if (
+      this.gameMode === "single" &&
+      Phaser.Input.Keyboard.JustDown(this.enterKey)
+    ) {
+      this.handlePlayerInteraction(1);
+    }
+  }
+
+  private handlePlayerInteraction(playerNum: 1 | 2) {
+    const playerPosition =
+      playerNum === 1 ? this.player1Position : this.player2Position;
+    const playerHeldNumber =
+      playerNum === 1 ? this.player1HeldNumber : this.player2HeldNumber;
+
+    const playerWorldX =
+      this.EXTENDED_START_X + playerPosition.x * this.CELL_SIZE;
+    const playerWorldY =
+      this.EXTENDED_START_Y + playerPosition.y * this.CELL_SIZE;
+
+    // Check if standing exactly on a number station
+    for (const station of this.numberStations) {
+      if (playerWorldX === station.x && playerWorldY === station.y) {
+        if (playerHeldNumber === null) {
+          // Pick up number
+          if (playerNum === 1) {
+            this.player1HeldNumber = station.number;
+          } else {
+            this.player2HeldNumber = station.number;
           }
-          return;
+          this.updateHeldNumberDisplay(playerNum);
         }
-      }
-
-      // Check if standing exactly on a processing station
-      for (const station of this.processingStations) {
-        if (playerWorldX === station.x && playerWorldY === station.y) {
-          this.handleProcessingStationInteraction(station);
-          return;
-        }
-      }
-
-      // Check if standing exactly on rubbish bin
-      if (
-        this.rubbishBin &&
-        playerWorldX === this.rubbishBin.x &&
-        playerWorldY === this.rubbishBin.y
-      ) {
-        this.handleRubbishBinInteraction();
         return;
       }
+    }
 
-      // If standing on the bingo board and holding a number, try to place it
-      if (this.playerHeldNumber !== null && this.isOnBingoBoard()) {
-        this.tryPlaceNumberOnBoard();
+    // Check if standing exactly on a processing station
+    for (const station of this.processingStations) {
+      if (playerWorldX === station.x && playerWorldY === station.y) {
+        this.handleProcessingStationInteraction(station, playerNum);
+        return;
       }
     }
-  }
 
-  private isOnBingoBoard(): boolean {
-    // Check if player is within the 5x5 bingo board area (positions 1-5 in extended grid)
-    return (
-      this.playerPosition.x >= 1 &&
-      this.playerPosition.x <= 5 &&
-      this.playerPosition.y >= 1 &&
-      this.playerPosition.y <= 5
-    );
-  }
-
-  private updateHeldNumberDisplay() {
-    if (this.playerHeldNumber !== null) {
-      this.playerNumberText.setText(this.playerHeldNumber.toString());
-      this.playerNumberText.setVisible(true);
-    } else {
-      this.playerNumberText.setVisible(false);
-    }
-  }
-
-  private tryPlaceNumberOnBoard() {
-    // Convert extended grid position to bingo board position
-    const row = this.playerPosition.y - 1; // Extended grid is offset by 1
-    const col = this.playerPosition.x - 1; // Extended grid is offset by 1
-
-    // Check if cell is already occupied
-    if (this.boardState[row][col] !== null) {
-      // Cell already has a number
-      const currentCell = this.bingoBoard[row][col];
-      currentCell.setFillStyle(0xff6b6b);
-      this.time.delayedCall(500, () => {
-        currentCell.setFillStyle(0x34495e);
-      });
+    // Check if standing exactly on rubbish bin
+    if (
+      this.rubbishBin &&
+      playerWorldX === this.rubbishBin.x &&
+      playerWorldY === this.rubbishBin.y
+    ) {
+      this.handleRubbishBinInteraction(playerNum);
       return;
     }
 
-    const currentCell = this.bingoBoard[row][col];
+    // If standing on the bingo board and holding a number, try to place it
+    if (playerHeldNumber !== null && this.isOnBingoBoard(playerPosition)) {
+      this.tryPlaceNumberOnBoard(playerNum);
+    }
+  }
 
-    if (this.playerHeldNumber === this.currentCalledNumber) {
+  private isOnBingoBoard(playerPosition: { x: number; y: number }): boolean {
+    // Check if player is within the 5x5 bingo board area (positions 1-5 in extended grid)
+    return (
+      playerPosition.x >= 1 &&
+      playerPosition.x <= 5 &&
+      playerPosition.y >= 1 &&
+      playerPosition.y <= 5
+    );
+  }
+
+  private updateHeldNumberDisplay(playerNum: 1 | 2) {
+    const playerHeldNumber =
+      playerNum === 1 ? this.player1HeldNumber : this.player2HeldNumber;
+    const playerNumberText =
+      playerNum === 1 ? this.player1NumberText : this.player2NumberText;
+
+    if (playerHeldNumber !== null) {
+      playerNumberText.setText(playerHeldNumber.toString());
+      playerNumberText.setVisible(true);
+    } else {
+      playerNumberText.setVisible(false);
+    }
+  }
+
+  private tryPlaceNumberOnBoard(playerNum: 1 | 2) {
+    const playerPosition =
+      playerNum === 1 ? this.player1Position : this.player2Position;
+    const playerHeldNumber =
+      playerNum === 1 ? this.player1HeldNumber : this.player2HeldNumber;
+
+    // Convert extended grid position to bingo board position
+    const row = playerPosition.y - 1; // Extended grid is offset by 1
+    const col = playerPosition.x - 1; // Extended grid is offset by 1
+
+    const currentCell = this.bingoBoard[row][col];
+    const currentState = this.boardState[row][col];
+
+    // VS mode logic
+    if (this.gameMode === "vs") {
+      // Check if cell is already occupied by the other player
+      if (currentState === "p1" || currentState === "p2") {
+        // In endgame mode, allow placing on occupied cells
+        if (!this.isEndgameMode && currentState !== `p${playerNum}`) {
+          // Cell occupied by other player - show red feedback
+          currentCell.setFillStyle(0xff6b6b);
+          this.time.delayedCall(500, () => {
+            const playerColor = currentState === "p1" ? 0xe74c3c : 0x3498db;
+            currentCell.setFillStyle(playerColor);
+          });
+          return;
+        }
+      }
+    } else {
+      // Single player mode - check if cell has any number
+      if (currentState !== null) {
+        currentCell.setFillStyle(0xff6b6b);
+        this.time.delayedCall(500, () => {
+          currentCell.setFillStyle(0x34495e);
+        });
+        return;
+      }
+    }
+
+    if (playerHeldNumber === this.currentCalledNumber) {
       // Correct number! Place it
       const numberText = this.add
         .text(
           this.BOARD_START_X + col * this.CELL_SIZE,
           this.BOARD_START_Y + row * this.CELL_SIZE,
-          this.playerHeldNumber.toString(),
+          playerHeldNumber.toString(),
           {
-            fontSize: "24px",
-            color: "#2ecc71",
+            fontSize: "20px",
+            color: "#ecf0f1",
             fontStyle: "bold",
           },
         )
         .setOrigin(0.5);
 
       // Update board state
-      this.boardState[row][col] = this.playerHeldNumber;
+      if (this.gameMode === "vs") {
+        this.boardState[row][col] = `p${playerNum}` as "p1" | "p2";
+        const cellColor = playerNum === 1 ? 0xe74c3c : 0x3498db;
+        currentCell.setFillStyle(cellColor);
+      } else {
+        this.boardState[row][col] = playerHeldNumber;
+        currentCell.setFillStyle(0x27ae60);
+      }
+
       this.placedNumberTexts[row][col] = numberText;
 
-      currentCell.setFillStyle(0x27ae60); // Green for correct placement
-      this.playerHeldNumber = null;
-      this.updateHeldNumberDisplay();
+      // Clear player's held number
+      if (playerNum === 1) {
+        this.player1HeldNumber = null;
+      } else {
+        this.player2HeldNumber = null;
+      }
+      this.updateHeldNumberDisplay(playerNum);
 
       // Check for bingo
-      if (this.checkForBingo()) {
-        this.handleBingo();
+      if (this.checkForBingo(playerNum)) {
+        this.handleBingo(playerNum);
       } else {
-        // Call a new number immediately after successful placement
-        this.callNewNumber();
+        // Check if board is full in VS mode
+        if (
+          this.gameMode === "vs" &&
+          this.isBoardFull() &&
+          !this.isEndgameMode
+        ) {
+          this.enterEndgameMode();
+        } else {
+          // Call a new number immediately after successful placement
+          this.callNewNumber();
+        }
       }
     } else {
       // Wrong number - visual feedback but don't place
       currentCell.setFillStyle(0xff6b6b);
       this.time.delayedCall(500, () => {
-        currentCell.setFillStyle(0x34495e);
+        if (this.gameMode === "vs") {
+          if (currentState === "p1") {
+            currentCell.setFillStyle(0xe74c3c);
+          } else if (currentState === "p2") {
+            currentCell.setFillStyle(0x3498db);
+          } else {
+            currentCell.setFillStyle(0x34495e);
+          }
+        } else {
+          currentCell.setFillStyle(0x34495e);
+        }
       });
     }
   }
@@ -677,20 +936,64 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private handleProcessingStationInteraction(station: {
-    x: number;
-    y: number;
-    obj: Phaser.GameObjects.Container;
-    heldNumber: number | null;
-    numberText: Phaser.GameObjects.Text | null;
-    operation: string;
-  }) {
-    if (this.playerHeldNumber !== null) {
+  private isBoardFull(): boolean {
+    for (let row = 0; row < this.GRID_SIZE; row++) {
+      for (let col = 0; col < this.GRID_SIZE; col++) {
+        if (row === 2 && col === 2) continue; // Skip FREE space
+        if (this.boardState[row][col] === null) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  private enterEndgameMode() {
+    this.isEndgameMode = true;
+    // Add visual indicator for endgame mode
+    const centerX = this.cameras.main.width / 2;
+    const endgameText = this.add
+      .text(centerX, 80, "ENDGAME MODE: SHARING ENABLED!", {
+        fontSize: "18px",
+        color: "#f39c12",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+
+    // Make it flash
+    this.tweens.add({
+      targets: endgameText,
+      alpha: 0.3,
+      duration: 500,
+      yoyo: true,
+      repeat: -1,
+    });
+  }
+
+  private handleProcessingStationInteraction(
+    station: {
+      x: number;
+      y: number;
+      obj: Phaser.GameObjects.Container;
+      heldNumber: number | null;
+      numberText: Phaser.GameObjects.Text | null;
+      operation: string;
+    },
+    playerNum: 1 | 2,
+  ) {
+    const playerHeldNumber =
+      playerNum === 1 ? this.player1HeldNumber : this.player2HeldNumber;
+
+    if (playerHeldNumber !== null) {
       if (station.heldNumber === null) {
         // Place first number at station
-        station.heldNumber = this.playerHeldNumber;
-        this.playerHeldNumber = null;
-        this.updateHeldNumberDisplay();
+        station.heldNumber = playerHeldNumber;
+        if (playerNum === 1) {
+          this.player1HeldNumber = null;
+        } else {
+          this.player2HeldNumber = null;
+        }
+        this.updateHeldNumberDisplay(playerNum);
 
         // Create and store the number display text
         station.numberText = this.add
@@ -706,19 +1009,19 @@ export class GameScene extends Phaser.Scene {
 
         switch (station.operation) {
           case "+":
-            result = station.heldNumber + this.playerHeldNumber;
+            result = station.heldNumber + playerHeldNumber;
             break;
           case "-":
-            result = station.heldNumber - this.playerHeldNumber;
+            result = station.heldNumber - playerHeldNumber;
             break;
           case "×":
-            result = station.heldNumber * this.playerHeldNumber;
+            result = station.heldNumber * playerHeldNumber;
             break;
           case "÷":
-            result = Math.floor(station.heldNumber / this.playerHeldNumber);
+            result = Math.floor(station.heldNumber / playerHeldNumber);
             break;
           default:
-            result = station.heldNumber + this.playerHeldNumber;
+            result = station.heldNumber + playerHeldNumber;
         }
 
         // Clear the station number and display
@@ -729,13 +1032,21 @@ export class GameScene extends Phaser.Scene {
         }
 
         // Give player the result
-        this.playerHeldNumber = result;
-        this.updateHeldNumberDisplay();
+        if (playerNum === 1) {
+          this.player1HeldNumber = result;
+        } else {
+          this.player2HeldNumber = result;
+        }
+        this.updateHeldNumberDisplay(playerNum);
       }
     } else {
       // Pick up number from station if there is one
       if (station.heldNumber !== null) {
-        this.playerHeldNumber = station.heldNumber;
+        if (playerNum === 1) {
+          this.player1HeldNumber = station.heldNumber;
+        } else {
+          this.player2HeldNumber = station.heldNumber;
+        }
         station.heldNumber = null;
 
         // Clear the number display
@@ -744,16 +1055,19 @@ export class GameScene extends Phaser.Scene {
           station.numberText = null;
         }
 
-        this.updateHeldNumberDisplay();
+        this.updateHeldNumberDisplay(playerNum);
       }
     }
   }
 
-  private handleRubbishBinInteraction() {
+  private handleRubbishBinInteraction(playerNum: 1 | 2) {
     if (!this.rubbishBin) return;
 
+    const playerHeldNumber =
+      playerNum === 1 ? this.player1HeldNumber : this.player2HeldNumber;
+
     // Only allow disposing if player is holding a number
-    if (this.playerHeldNumber !== null) {
+    if (playerHeldNumber !== null) {
       // Visual feedback - flash the bin
       const binObj = this.rubbishBin.obj;
       binObj.setScale(1.1);
@@ -763,7 +1077,7 @@ export class GameScene extends Phaser.Scene {
         .text(
           this.rubbishBin.x,
           this.rubbishBin.y - 40,
-          "-" + this.playerHeldNumber,
+          "-" + playerHeldNumber,
           {
             fontSize: "16px",
             color: "#e74c3c",
@@ -789,12 +1103,26 @@ export class GameScene extends Phaser.Scene {
       });
 
       // Destroy the held number
-      this.playerHeldNumber = null;
-      this.updateHeldNumberDisplay();
+      if (playerNum === 1) {
+        this.player1HeldNumber = null;
+      } else {
+        this.player2HeldNumber = null;
+      }
+      this.updateHeldNumberDisplay(playerNum);
     }
   }
 
-  private checkForBingo(): boolean {
+  private checkForBingo(playerNum?: 1 | 2): boolean {
+    if (this.gameMode === "single") {
+      // Single player mode - check if any line is complete
+      return this.checkLineComplete();
+    } else {
+      // VS mode - check if specific player has a line
+      return this.checkPlayerBingo(playerNum!);
+    }
+  }
+
+  private checkLineComplete(): boolean {
     // Check rows
     for (let row = 0; row < this.GRID_SIZE; row++) {
       let hasRow = true;
@@ -842,9 +1170,65 @@ export class GameScene extends Phaser.Scene {
     return false;
   }
 
-  private handleBingo() {
-    // Stop the timer
-    this.gameStarted = false;
+  private checkPlayerBingo(playerNum: 1 | 2): boolean {
+    const playerMarker = `p${playerNum}` as "p1" | "p2";
+
+    // Check rows
+    for (let row = 0; row < this.GRID_SIZE; row++) {
+      let hasRow = true;
+      for (let col = 0; col < this.GRID_SIZE; col++) {
+        if (row === 2 && col === 2) continue; // Skip FREE space
+        if (this.boardState[row][col] !== playerMarker) {
+          hasRow = false;
+          break;
+        }
+      }
+      if (hasRow) return true;
+    }
+
+    // Check columns
+    for (let col = 0; col < this.GRID_SIZE; col++) {
+      let hasCol = true;
+      for (let row = 0; row < this.GRID_SIZE; row++) {
+        if (row === 2 && col === 2) continue; // Skip FREE space
+        if (this.boardState[row][col] !== playerMarker) {
+          hasCol = false;
+          break;
+        }
+      }
+      if (hasCol) return true;
+    }
+
+    // Check diagonal (top-left to bottom-right)
+    let hasDiag1 = true;
+    for (let i = 0; i < this.GRID_SIZE; i++) {
+      if (i === 2) continue; // Skip FREE space
+      if (this.boardState[i][i] !== playerMarker) {
+        hasDiag1 = false;
+        break;
+      }
+    }
+    if (hasDiag1) return true;
+
+    // Check diagonal (top-right to bottom-left)
+    let hasDiag2 = true;
+    for (let i = 0; i < this.GRID_SIZE; i++) {
+      if (i === 2) continue; // Skip FREE space
+      if (this.boardState[i][this.GRID_SIZE - 1 - i] !== playerMarker) {
+        hasDiag2 = false;
+        break;
+      }
+    }
+    if (hasDiag2) return true;
+
+    return false;
+  }
+
+  private handleBingo(playerNum?: 1 | 2) {
+    // Stop the timer (single player only)
+    if (this.gameMode === "single") {
+      this.gameStarted = false;
+    }
 
     const centerX = this.cameras.main.width / 2;
     const centerY = this.cameras.main.height / 2;
@@ -861,13 +1245,14 @@ export class GameScene extends Phaser.Scene {
       .setAlpha(0.7)
       .setOrigin(0.5);
 
-    // Create modal dialog background (increased height for completion time)
+    // Create modal dialog background
+    const dialogHeight = this.gameMode === "single" ? 420 : 350;
     this.add
-      .rectangle(centerX, centerY, 450, 420, 0x34495e)
+      .rectangle(centerX, centerY, 450, dialogHeight, 0x34495e)
       .setOrigin(0.5)
       .setStrokeStyle(4, 0x2c3e50);
 
-    // Create celebratory message with better spacing
+    // Create celebratory message
     this.add
       .text(centerX, centerY - 80, "🎉 BINGO! 🎉", {
         fontSize: "48px",
@@ -876,60 +1261,80 @@ export class GameScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    this.add
-      .text(centerX, centerY - 20, "Congratulations!", {
-        fontSize: "24px",
-        color: "#ecf0f1",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
+    if (this.gameMode === "vs" && playerNum) {
+      // VS mode - show winner
+      const playerName = playerNum === 1 ? "Player 1" : "Player 2";
+      const playerColor = playerNum === 1 ? "#e74c3c" : "#3498db";
 
-    this.add
-      .text(centerX, centerY + 10, "You completed the board!", {
-        fontSize: "18px",
-        color: "#bdc3c7",
-      })
-      .setOrigin(0.5);
+      this.add
+        .text(centerX, centerY - 20, `${playerName} Wins!`, {
+          fontSize: "28px",
+          color: playerColor,
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5);
+    } else {
+      // Single player mode
+      this.add
+        .text(centerX, centerY - 20, "Congratulations!", {
+          fontSize: "24px",
+          color: "#ecf0f1",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5);
 
-    // Display completion time
-    const completionTime = this.currentTime;
-    const seconds = Math.floor(completionTime / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const displaySeconds = seconds % 60;
-    const timeString = `${minutes}:${displaySeconds.toString().padStart(2, "0")}`;
+      this.add
+        .text(centerX, centerY + 10, "You completed the board!", {
+          fontSize: "18px",
+          color: "#bdc3c7",
+        })
+        .setOrigin(0.5);
+    }
 
-    this.add
-      .text(centerX, centerY + 40, `Completion Time: ${timeString}`, {
-        fontSize: "20px",
-        color: "#f39c12",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
+    // Display completion time (single player only)
+    let yOffset = 40;
+    if (this.gameMode === "single") {
+      const completionTime = this.currentTime;
+      const seconds = Math.floor(completionTime / 1000);
+      const minutes = Math.floor(seconds / 60);
+      const displaySeconds = seconds % 60;
+      const timeString = `${minutes}:${displaySeconds.toString().padStart(2, "0")}`;
 
-    // Play again button with better positioning (adjusted for completion time)
+      this.add
+        .text(centerX, centerY + yOffset, `Completion Time: ${timeString}`, {
+          fontSize: "20px",
+          color: "#f39c12",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5);
+
+      yOffset += 60;
+    }
+
+    // Play again button
     const playAgainButton = this.add
-      .rectangle(centerX, centerY + 100, 180, 50, 0x27ae60)
+      .rectangle(centerX, centerY + yOffset, 180, 50, 0x27ae60)
       .setInteractive()
       .setStrokeStyle(3, 0x2ecc71)
       .setOrigin(0.5);
 
     this.add
-      .text(centerX, centerY + 100, "PLAY AGAIN", {
+      .text(centerX, centerY + yOffset, "PLAY AGAIN", {
         fontSize: "18px",
         color: "#ecf0f1",
         fontStyle: "bold",
       })
       .setOrigin(0.5);
 
-    // Menu button with better positioning (adjusted for completion time)
+    // Menu button
     const menuButton = this.add
-      .rectangle(centerX, centerY + 160, 180, 50, 0xe74c3c)
+      .rectangle(centerX, centerY + yOffset + 60, 180, 50, 0xe74c3c)
       .setInteractive()
       .setStrokeStyle(3, 0xc0392b)
       .setOrigin(0.5);
 
     this.add
-      .text(centerX, centerY + 160, "MAIN MENU", {
+      .text(centerX, centerY + yOffset + 60, "MAIN MENU", {
         fontSize: "18px",
         color: "#ecf0f1",
         fontStyle: "bold",
@@ -938,7 +1343,7 @@ export class GameScene extends Phaser.Scene {
 
     // Button interactions
     playAgainButton.on("pointerdown", () => {
-      this.scene.restart();
+      this.scene.restart({ gameMode: this.gameMode });
     });
 
     menuButton.on("pointerdown", () => {

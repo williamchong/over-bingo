@@ -26,14 +26,28 @@ export class StartScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    // Start button
-    const startButton = this.add
-      .rectangle(centerX, centerY, 200, 50, 0x27ae60)
+    // VS Mode button
+    const vsButton = this.add
+      .rectangle(centerX, centerY - 30, 200, 50, 0x27ae60)
       .setInteractive()
       .setStrokeStyle(2, 0x2ecc71);
 
     this.add
-      .text(centerX, centerY, "START GAME", {
+      .text(centerX, centerY - 30, "VS MODE", {
+        fontSize: "18px",
+        color: "#ecf0f1",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+
+    // Single Player button
+    const singleButton = this.add
+      .rectangle(centerX, centerY + 40, 200, 50, 0xe67e22)
+      .setInteractive()
+      .setStrokeStyle(2, 0xf39c12);
+
+    this.add
+      .text(centerX, centerY + 40, "SINGLE PLAYER", {
         fontSize: "18px",
         color: "#ecf0f1",
         fontStyle: "bold",
@@ -42,12 +56,12 @@ export class StartScene extends Phaser.Scene {
 
     // Tutorial button
     const tutorialButton = this.add
-      .rectangle(centerX, centerY + 70, 200, 50, 0x3498db)
+      .rectangle(centerX, centerY + 110, 200, 50, 0x3498db)
       .setInteractive()
       .setStrokeStyle(2, 0x5dade2);
 
     this.add
-      .text(centerX, centerY + 70, "HOW TO PLAY", {
+      .text(centerX, centerY + 110, "HOW TO PLAY", {
         fontSize: "18px",
         color: "#ecf0f1",
         fontStyle: "bold",
@@ -55,16 +69,28 @@ export class StartScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     // Button interactions
-    startButton.on("pointerdown", () => {
-      this.scene.start("GameScene");
+    vsButton.on("pointerdown", () => {
+      this.scene.start("GameScene", { gameMode: "vs" });
     });
 
-    startButton.on("pointerover", () => {
-      startButton.setFillStyle(0x2ecc71);
+    vsButton.on("pointerover", () => {
+      vsButton.setFillStyle(0x2ecc71);
     });
 
-    startButton.on("pointerout", () => {
-      startButton.setFillStyle(0x27ae60);
+    vsButton.on("pointerout", () => {
+      vsButton.setFillStyle(0x27ae60);
+    });
+
+    singleButton.on("pointerdown", () => {
+      this.scene.start("GameScene", { gameMode: "single" });
+    });
+
+    singleButton.on("pointerover", () => {
+      singleButton.setFillStyle(0xf39c12);
+    });
+
+    singleButton.on("pointerout", () => {
+      singleButton.setFillStyle(0xe67e22);
     });
 
     tutorialButton.on("pointerdown", () => {
