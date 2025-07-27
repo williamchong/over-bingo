@@ -1,7 +1,9 @@
 import Phaser from "phaser";
 
 export class GameScene extends Phaser.Scene {
-  private player!: Phaser.GameObjects.Rectangle;
+  private player!: Phaser.GameObjects.Container;
+  private playerRect!: Phaser.GameObjects.Rectangle;
+  private playerNumberText!: Phaser.GameObjects.Text;
   private bingoBoard: Phaser.GameObjects.Rectangle[][] = [];
   private playerPosition = { x: 2, y: 2 }; // Start in center of 5x5 grid
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
@@ -20,7 +22,6 @@ export class GameScene extends Phaser.Scene {
     heldNumber: number | null;
   } | null = null;
   private playerHeldNumber: number | null = null;
-  private heldNumberText!: Phaser.GameObjects.Text;
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private boardState: (number | null)[][] = [];
   private placedNumberTexts: (Phaser.GameObjects.Text | null)[][] = [];
@@ -80,7 +81,24 @@ export class GameScene extends Phaser.Scene {
     const startX = this.BOARD_START_X + this.playerPosition.x * this.CELL_SIZE;
     const startY = this.BOARD_START_Y + this.playerPosition.y * this.CELL_SIZE;
 
-    this.player = this.add.rectangle(startX, startY, 20, 20, 0xe74c3c);
+    // Create player container
+    this.player = this.add.container(startX, startY);
+
+    // Player rectangle
+    this.playerRect = this.add.rectangle(0, 0, 20, 20, 0xe74c3c);
+
+    // Number text (initially hidden)
+    this.playerNumberText = this.add
+      .text(0, -15, "", {
+        fontSize: "12px",
+        color: "#f1c40f",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5)
+      .setVisible(false);
+
+    // Add components to container
+    this.player.add([this.playerRect, this.playerNumberText]);
   }
 
   private createNumberStations() {
@@ -169,19 +187,9 @@ export class GameScene extends Phaser.Scene {
       }
     );
 
-    // Held number display
-    this.add.text(50, 120, "Held Number:", {
-      fontSize: "18px",
-      color: "#ecf0f1",
-    });
-
-    this.heldNumberText = this.add.text(170, 120, "None", {
-      fontSize: "18px",
-      color: "#95a5a6",
-    });
 
     // Game controls reminder (minimal)
-    this.add.text(50, 160, "Space: Interact", {
+    this.add.text(50, 120, "Space: Interact", {
       fontSize: "14px",
       color: "#bdc3c7",
     });
@@ -289,11 +297,10 @@ export class GameScene extends Phaser.Scene {
 
   private updateHeldNumberDisplay() {
     if (this.playerHeldNumber !== null) {
-      this.heldNumberText.setText(this.playerHeldNumber.toString());
-      this.heldNumberText.setColor("#f39c12");
+      this.playerNumberText.setText(this.playerHeldNumber.toString());
+      this.playerNumberText.setVisible(true);
     } else {
-      this.heldNumberText.setText("None");
-      this.heldNumberText.setColor("#95a5a6");
+      this.playerNumberText.setVisible(false);
     }
   }
 
