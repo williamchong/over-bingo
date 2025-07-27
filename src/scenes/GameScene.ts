@@ -20,6 +20,7 @@ export class GameScene extends Phaser.Scene {
     y: number;
     obj: Phaser.GameObjects.Container;
     heldNumber: number | null;
+    numberText: Phaser.GameObjects.Text | null;
   } | null = null;
   private playerHeldNumber: number | null = null;
   private spaceKey!: Phaser.Input.Keyboard.Key;
@@ -166,6 +167,7 @@ export class GameScene extends Phaser.Scene {
       y: stationY,
       obj: container,
       heldNumber: null,
+      numberText: null,
     };
   }
 
@@ -383,8 +385,8 @@ export class GameScene extends Phaser.Scene {
         this.playerHeldNumber = null;
         this.updateHeldNumberDisplay();
 
-        // Visual feedback removed for now
-        this.add
+        // Create and store the number display text
+        this.processingStation.numberText = this.add
           .text(
             this.processingStation.x - 20,
             this.processingStation.y + 40,
@@ -401,23 +403,29 @@ export class GameScene extends Phaser.Scene {
         const result =
           this.processingStation.heldNumber + this.playerHeldNumber;
 
-        // Clear the station
+        // Clear the station number and display
         this.processingStation.heldNumber = null;
+        if (this.processingStation.numberText) {
+          this.processingStation.numberText.destroy();
+          this.processingStation.numberText = null;
+        }
 
         // Give player the result
         this.playerHeldNumber = result;
         this.updateHeldNumberDisplay();
-
-        // Visual feedback removed for now
-
-        // Clear any number displays at the station
-        // (In a full implementation, we'd track these text objects)
       }
     } else {
       // Pick up number from station if there is one
       if (this.processingStation.heldNumber !== null) {
         this.playerHeldNumber = this.processingStation.heldNumber;
         this.processingStation.heldNumber = null;
+        
+        // Clear the number display
+        if (this.processingStation.numberText) {
+          this.processingStation.numberText.destroy();
+          this.processingStation.numberText = null;
+        }
+        
         this.updateHeldNumberDisplay();
       }
     }
