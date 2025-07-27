@@ -1,8 +1,16 @@
 {
   "name": "over-bingo",
-  "version": "0.1.0",
-  "description": "A chaotic fusion of bingo, math, and frantic multiplayer action",
+  "version": "2.0.0",
+  "description": "A chaotic fusion of bingo, math, and frantic multiplayer action. Inspired by Overcooked, challenge players to work together or against each other to complete a bingo board through quick thinking and mathematical mayhem.",
   "main": "dist/index.js",
+  "homepage": "https://williamchong.github.io/over-bingo/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/williamchong/over-bingo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/williamchong/over-bingo/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -16,9 +24,15 @@
     "game",
     "bingo",
     "multiplayer",
-    "phaser"
+    "phaser",
+    "math",
+    "arithmetic",
+    "cooperative",
+    "overcooked-inspired",
+    "typescript",
+    "browser-game"
   ],
-  "author": "",
+  "author": "williamchong",
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.32.0",
