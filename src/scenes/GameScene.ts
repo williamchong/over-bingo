@@ -660,47 +660,70 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handleBingo() {
-    // Create celebratory message
+    const centerX = this.cameras.main.width / 2;
+    const centerY = this.cameras.main.height / 2;
+
+    // Create full-screen dark overlay
+    const fullOverlay = this.add
+      .rectangle(centerX, centerY, this.cameras.main.width, this.cameras.main.height, 0x000000)
+      .setAlpha(0.7)
+      .setOrigin(0.5);
+
+    // Create modal dialog background
+    const modalBg = this.add
+      .rectangle(centerX, centerY, 450, 350, 0x34495e)
+      .setOrigin(0.5)
+      .setStrokeStyle(4, 0x2c3e50);
+
+    // Create celebratory message with better spacing
     this.add
-      .text(400, 300, "BINGO!", {
-        fontSize: "64px",
+      .text(centerX, centerY - 80, "🎉 BINGO! 🎉", {
+        fontSize: "48px",
         color: "#f1c40f",
         fontStyle: "bold",
       })
       .setOrigin(0.5);
 
     this.add
-      .text(400, 370, "Congratulations! You completed the board!", {
-        fontSize: "20px",
-        color: "#ecf0f1",
-      })
-      .setOrigin(0.5);
-
-    // Play again button
-    const playAgainButton = this.add
-      .rectangle(400, 430, 150, 40, 0x3498db)
-      .setInteractive()
-      .setStrokeStyle(2, 0x5dade2)
-      .setOrigin(0.5);
-
-    this.add
-      .text(400, 430, "PLAY AGAIN", {
-        fontSize: "16px",
+      .text(centerX, centerY - 20, "Congratulations!", {
+        fontSize: "24px",
         color: "#ecf0f1",
         fontStyle: "bold",
       })
       .setOrigin(0.5);
 
-    // Menu button
-    const menuButton = this.add
-      .rectangle(400, 480, 150, 40, 0xe74c3c)
+    this.add
+      .text(centerX, centerY + 10, "You completed the board!", {
+        fontSize: "18px",
+        color: "#bdc3c7",
+      })
+      .setOrigin(0.5);
+
+    // Play again button with better positioning
+    const playAgainButton = this.add
+      .rectangle(centerX, centerY + 70, 180, 50, 0x27ae60)
       .setInteractive()
-      .setStrokeStyle(2, 0xc0392b)
+      .setStrokeStyle(3, 0x2ecc71)
       .setOrigin(0.5);
 
     this.add
-      .text(400, 480, "MAIN MENU", {
-        fontSize: "16px",
+      .text(centerX, centerY + 70, "PLAY AGAIN", {
+        fontSize: "18px",
+        color: "#ecf0f1",
+        fontStyle: "bold",
+      })
+      .setOrigin(0.5);
+
+    // Menu button with better positioning
+    const menuButton = this.add
+      .rectangle(centerX, centerY + 130, 180, 50, 0xe74c3c)
+      .setInteractive()
+      .setStrokeStyle(3, 0xc0392b)
+      .setOrigin(0.5);
+
+    this.add
+      .text(centerX, centerY + 130, "MAIN MENU", {
+        fontSize: "18px",
         color: "#ecf0f1",
         fontStyle: "bold",
       })
