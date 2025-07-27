@@ -15,13 +15,14 @@ export class GameScene extends Phaser.Scene {
     number: number;
     obj: Phaser.GameObjects.Container;
   }[] = [];
-  private processingStation: {
+  private processingStations: {
     x: number;
     y: number;
     obj: Phaser.GameObjects.Container;
     heldNumber: number | null;
     numberText: Phaser.GameObjects.Text | null;
-  } | null = null;
+    operation: string;
+  }[] = [];
   private rubbishBin: {
     x: number;
     y: number;
@@ -34,8 +35,8 @@ export class GameScene extends Phaser.Scene {
 
   private readonly GRID_SIZE = 5;
   private readonly CELL_SIZE = 80;
-  private readonly BOARD_START_X = 200;
-  private readonly BOARD_START_Y = 100;
+  private readonly BOARD_START_X = 400 - (5 * 80) / 2; // Center horizontally (800/2 - boardWidth/2)
+  private readonly BOARD_START_Y = 300 - (5 * 80) / 2; // Center vertically (600/2 - boardHeight/2)
 
   constructor() {
     super({ key: "GameScene" });
@@ -45,7 +46,7 @@ export class GameScene extends Phaser.Scene {
     this.createBingoBoard();
     this.createPlayer();
     this.createNumberStations();
-    this.createProcessingStation();
+    this.createProcessingStations();
     this.createRubbishBin();
     this.createUI();
     this.setupInput();
@@ -109,17 +110,22 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createNumberStations() {
-    // Create number stations around the board for digits 0-9
+    // Create number stations evenly distributed: 3 numbers per side (avoiding operation station positions)
     const stationPositions = [
-      { x: 50, y: 250, number: 1 },
-      { x: 50, y: 300, number: 2 },
-      { x: 50, y: 350, number: 3 },
-      { x: 650, y: 250, number: 4 },
-      { x: 650, y: 300, number: 5 },
-      { x: 650, y: 350, number: 6 },
-      { x: 200, y: 500, number: 7 },
-      { x: 300, y: 500, number: 8 },
-      { x: 400, y: 500, number: 9 },
+      // Left side - 3 numbers (avoiding rows 0 and 4 where operation stations are)
+      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 1 * this.CELL_SIZE, number: 1 },
+      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 2 * this.CELL_SIZE, number: 2 },
+      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 3 * this.CELL_SIZE, number: 3 },
+      
+      // Right side - 3 numbers (avoiding rows 0 and 4 where operation stations are)
+      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 1 * this.CELL_SIZE, number: 4 },
+      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 2 * this.CELL_SIZE, number: 5 },
+      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 3 * this.CELL_SIZE, number: 6 },
+      
+      // Bottom side - 3 numbers (no operation stations on bottom side)
+      { x: this.BOARD_START_X + 1 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE, number: 7 },
+      { x: this.BOARD_START_X + 2 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE, number: 8 },
+      { x: this.BOARD_START_X + 3 * this.CELL_SIZE, y: this.BOARD_START_Y + 5 * this.CELL_SIZE, number: 9 },
     ];
 
     stationPositions.forEach((station) => {
@@ -148,38 +154,47 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  private createProcessingStation() {
-    const stationX = 500;
-    const stationY = 500;
+  private createProcessingStations() {
+    const stations = [
+      // Operation stations on left and right sides only, relative to centered board
+      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 0 * this.CELL_SIZE, operation: "+", color: 0x9b59b6 }, // Left side, top position
+      { x: this.BOARD_START_X - this.CELL_SIZE, y: this.BOARD_START_Y + 4 * this.CELL_SIZE, operation: "-", color: 0xe67e22 }, // Left side, bottom position
+      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 0 * this.CELL_SIZE, operation: "×", color: 0x2980b9 }, // Right side, top position
+      { x: this.BOARD_START_X + 5 * this.CELL_SIZE, y: this.BOARD_START_Y + 4 * this.CELL_SIZE, operation: "÷", color: 0x8e44ad }, // Right side, bottom position - Purple (different shade)
+    ];
 
-    const container = this.add.container(stationX, stationY);
+    stations.forEach((stationData) => {
+      const container = this.add.container(stationData.x, stationData.y);
 
-    // Station background
-    const bg = this.add.rectangle(0, 0, 80, 60, 0x9b59b6);
+      // Station background
+      const bg = this.add.rectangle(0, 0, 60, 50, stationData.color);
 
-    // Plus symbol
-    const plusText = this.add
-      .text(0, 0, "+", {
-        fontSize: "32px",
-        color: "#ecf0f1",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
+      // Operation symbol
+      const operationText = this.add
+        .text(0, 0, stationData.operation, {
+          fontSize: "24px",
+          color: "#ecf0f1",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5);
 
-    container.add([bg, plusText]);
+      container.add([bg, operationText]);
 
-    this.processingStation = {
-      x: stationX,
-      y: stationY,
-      obj: container,
-      heldNumber: null,
-      numberText: null,
-    };
+      this.processingStations.push({
+        x: stationData.x,
+        y: stationData.y,
+        obj: container,
+        heldNumber: null,
+        numberText: null,
+        operation: stationData.operation,
+      });
+    });
   }
 
   private createRubbishBin() {
-    const binX = 650;
-    const binY = 150;
+    // Position rubbish bin relative to centered board
+    const binX = this.BOARD_START_X + 4 * this.CELL_SIZE;
+    const binY = this.BOARD_START_Y + 5 * this.CELL_SIZE;
 
     const container = this.add.container(binX, binY);
 
@@ -206,28 +221,30 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createUI() {
-    // Called number display
-    this.add.text(50, 50, "Called Number:", {
-      fontSize: "24px",
+    // Called number display - centered at top like a title
+    const centerX = this.cameras.main.width / 2;
+    
+    this.add.text(centerX, 30, "Called Number:", {
+      fontSize: "20px",
       color: "#ecf0f1",
-    });
+    }).setOrigin(0.5);
 
     this.calledNumberText = this.add.text(
-      50,
-      80,
+      centerX,
+      60,
       this.currentCalledNumber.toString(),
       {
-        fontSize: "32px",
+        fontSize: "36px",
         color: "#f39c12",
         fontStyle: "bold",
       }
-    );
+    ).setOrigin(0.5);
 
-    // Game controls reminder (minimal)
-    this.add.text(50, 120, "Space: Interact", {
+    // Game controls reminder at bottom
+    this.add.text(centerX, this.cameras.main.height - 30, "Space: Interact", {
       fontSize: "14px",
       color: "#bdc3c7",
-    });
+    }).setOrigin(0.5);
   }
 
   private setupInput() {
@@ -308,17 +325,17 @@ export class GameScene extends Phaser.Scene {
         }
       }
 
-      // Check processing station
-      if (this.processingStation) {
+      // Check processing stations
+      for (const station of this.processingStations) {
         const distance = Phaser.Math.Distance.Between(
           playerWorldX,
           playerWorldY,
-          this.processingStation.x,
-          this.processingStation.y
+          station.x,
+          station.y
         );
 
         if (distance < 100) {
-          this.handleProcessingStationInteraction();
+          this.handleProcessingStationInteraction(station);
           return;
         }
       }
@@ -423,39 +440,60 @@ export class GameScene extends Phaser.Scene {
     this.calledNumberText.setText(this.currentCalledNumber.toString());
   }
 
-  private handleProcessingStationInteraction() {
-    if (!this.processingStation) return;
-
+  private handleProcessingStationInteraction(station: {
+    x: number;
+    y: number;
+    obj: Phaser.GameObjects.Container;
+    heldNumber: number | null;
+    numberText: Phaser.GameObjects.Text | null;
+    operation: string;
+  }) {
     if (this.playerHeldNumber !== null) {
-      if (this.processingStation.heldNumber === null) {
+      if (station.heldNumber === null) {
         // Place first number at station
-        this.processingStation.heldNumber = this.playerHeldNumber;
+        station.heldNumber = this.playerHeldNumber;
         this.playerHeldNumber = null;
         this.updateHeldNumberDisplay();
 
         // Create and store the number display text
-        this.processingStation.numberText = this.add
+        station.numberText = this.add
           .text(
-            this.processingStation.x - 20,
-            this.processingStation.y + 40,
-            this.processingStation.heldNumber.toString(),
+            station.x - 20,
+            station.y + 35,
+            station.heldNumber.toString(),
             {
-              fontSize: "16px",
+              fontSize: "14px",
               color: "#f1c40f",
               fontStyle: "bold",
             }
           )
           .setOrigin(0.5);
       } else {
-        // Perform addition with second number
-        const result =
-          this.processingStation.heldNumber + this.playerHeldNumber;
+        // Perform operation with second number
+        let result: number;
+        
+        switch (station.operation) {
+          case "+":
+            result = station.heldNumber + this.playerHeldNumber;
+            break;
+          case "-":
+            result = station.heldNumber - this.playerHeldNumber;
+            break;
+          case "×":
+            result = station.heldNumber * this.playerHeldNumber;
+            break;
+          case "÷":
+            result = Math.floor(station.heldNumber / this.playerHeldNumber);
+            break;
+          default:
+            result = station.heldNumber + this.playerHeldNumber;
+        }
 
         // Clear the station number and display
-        this.processingStation.heldNumber = null;
-        if (this.processingStation.numberText) {
-          this.processingStation.numberText.destroy();
-          this.processingStation.numberText = null;
+        station.heldNumber = null;
+        if (station.numberText) {
+          station.numberText.destroy();
+          station.numberText = null;
         }
 
         // Give player the result
@@ -464,16 +502,16 @@ export class GameScene extends Phaser.Scene {
       }
     } else {
       // Pick up number from station if there is one
-      if (this.processingStation.heldNumber !== null) {
-        this.playerHeldNumber = this.processingStation.heldNumber;
-        this.processingStation.heldNumber = null;
-
+      if (station.heldNumber !== null) {
+        this.playerHeldNumber = station.heldNumber;
+        station.heldNumber = null;
+        
         // Clear the number display
-        if (this.processingStation.numberText) {
-          this.processingStation.numberText.destroy();
-          this.processingStation.numberText = null;
+        if (station.numberText) {
+          station.numberText.destroy();
+          station.numberText = null;
         }
-
+        
         this.updateHeldNumberDisplay();
       }
     }
