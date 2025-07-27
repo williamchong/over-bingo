@@ -404,10 +404,8 @@ export class GameScene extends Phaser.Scene {
       if (this.checkForBingo()) {
         this.handleBingo();
       } else {
-        // Call a new number after a short delay
-        this.time.delayedCall(2000, () => {
-          this.callNewNumber();
-        });
+        // Call a new number immediately after successful placement
+        this.callNewNumber();
       }
     } else {
       // Wrong number - visual feedback but don't place
