@@ -2,7 +2,7 @@ import Phaser from "phaser";
 
 export class TutorialScene extends Phaser.Scene {
   private currentPage = 0;
-  private readonly totalPages = 3;
+  private readonly totalPages = 4;
   private pageContent: Phaser.GameObjects.Container[] = [];
 
   constructor() {
@@ -38,7 +38,7 @@ export class TutorialScene extends Phaser.Scene {
         .text(
           centerX,
           200,
-          "• Use ARROW KEYS to move around the 5x5 bingo board",
+          "• Use ARROW KEYS or WASD to move around the 5x5 bingo board",
           {
             fontSize: "16px",
             color: "#bdc3c7",
@@ -115,7 +115,7 @@ export class TutorialScene extends Phaser.Scene {
         .text(
           centerX,
           250,
-          "• Stand near one and press SPACE to pick up a number",
+          "• Stand near one and press SPACE or ENTER to pick up a number",
           {
             fontSize: "16px",
             color: "#bdc3c7",
@@ -179,10 +179,15 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 260, "2. Go to purple station, press SPACE to drop it", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          260,
+          "2. Go to purple station, press SPACE/ENTER to drop it",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
       this.add
         .text(centerX, 290, "3. Get number 4 from a green station", {
@@ -194,7 +199,7 @@ export class TutorialScene extends Phaser.Scene {
         .text(
           centerX,
           320,
-          "4. Return to purple station, press SPACE (3+4=7)",
+          "4. Return to purple station, press SPACE/ENTER (3+4=7)",
           {
             fontSize: "16px",
             color: "#bdc3c7",
@@ -205,7 +210,7 @@ export class TutorialScene extends Phaser.Scene {
         .text(
           centerX,
           350,
-          "5. Move to empty bingo square, press SPACE to place",
+          "5. Move to empty bingo square, press SPACE/ENTER to place",
           {
             fontSize: "16px",
             color: "#bdc3c7",
@@ -220,6 +225,76 @@ export class TutorialScene extends Phaser.Scene {
         .setOrigin(0.5),
     ]);
     this.pageContent.push(page3);
+
+    // Page 4: VS Mode
+    const page4 = this.add.container(0, 0);
+    page4.add([
+      this.add
+        .text(centerX, 80, "HOW TO PLAY", {
+          fontSize: "32px",
+          color: "#f39c12",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 140, "Page 4: VS Mode", {
+          fontSize: "20px",
+          color: "#ecf0f1",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 190, "PLAYER 1 (RED):", {
+          fontSize: "18px",
+          color: "#e74c3c",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 220, "• WASD keys to move + SPACE to interact", {
+          fontSize: "16px",
+          color: "#bdc3c7",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 250, "PLAYER 2 (BLUE):", {
+          fontSize: "18px",
+          color: "#3498db",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 280, "• Arrow Keys to move + ENTER to interact", {
+          fontSize: "16px",
+          color: "#bdc3c7",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 320, "VS MODE RULES:", {
+          fontSize: "18px",
+          color: "#f39c12",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 350, "• First player to get BINGO wins!", {
+          fontSize: "16px",
+          color: "#bdc3c7",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 380, "• Claimed squares block your opponent", {
+          fontSize: "16px",
+          color: "#bdc3c7",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 410, "• Compete for resources at shared stations", {
+          fontSize: "16px",
+          color: "#bdc3c7",
+        })
+        .setOrigin(0.5),
+    ]);
+    this.pageContent.push(page4);
   }
 
   private createNavigation() {
@@ -262,7 +337,7 @@ export class TutorialScene extends Phaser.Scene {
       .setVisible(false);
 
     this.add
-      .text(centerX, bottomY + 50, "START GAME", {
+      .text(centerX, bottomY + 50, "CHOOSE MODE", {
         fontSize: "14px",
         color: "#ecf0f1",
         fontStyle: "bold",
@@ -311,7 +386,7 @@ export class TutorialScene extends Phaser.Scene {
     });
 
     startButton.on("pointerdown", () => {
-      this.scene.start("GameScene");
+      this.scene.start("StartScene");
     });
 
     menuButton.on("pointerdown", () => {

@@ -6,18 +6,22 @@ Inspired by the cooperative chaos of _Overcooked_, Over-Bingo challenges players
 
 ## 🎮 **PLAYABLE NOW!**
 
-**Single-player time attack mode is fully implemented!**
-- Run `npm install && npm run dev` 
-- Navigate to http://localhost:3000
-- Experience the complete game with tutorial, dynamic layouts, and timer-based challenges
+**Both single-player and local multiplayer VS mode are fully implemented!**
+
+- **Play online now**: https://williamchong.github.io/over-bingo/
+- Or run locally: `npm install && npm run dev`
+- Choose between Single Player time attack or competitive VS Mode
 
 ### ✅ Current Features
-- **Complete Single-Player Experience**: Start screen, tutorial, and main game
+
+- **Complete Single-Player Experience**: Start screen, tutorial, and main game with time attack mode
+- **Local Multiplayer VS Mode**: 2-player competitive gameplay with blocking mechanics
+- **Dual Control Schemes**: Player 1 (WASD+Space) vs Player 2 (Arrows+Enter)
+- **Box Ownership System**: Players claim squares and block opponents
+- **Endgame Mode**: When board fills without bingo, sharing becomes enabled
 - **Four Arithmetic Operations**: Addition, subtraction, multiplication, division
 - **Dynamic Gameplay**: Randomized numbers and shuffling station positions
-- **Time Attack Mode**: Real-time timer with completion tracking
-- **Professional UI**: Modal dialogs, interactive tutorial, clean interface
-- **Grid-Based Movement**: Block-based positioning with semi-transparent player
+- **Professional UI**: Modal dialogs, interactive tutorial, player indicators
 
 ## Table of Contents
 
@@ -133,7 +137,6 @@ This project will be built using modern web technologies to ensure it's accessib
 We will follow an iterative development process, starting with the core experience and expanding from there.
 
 1.  **Milestone 1: Single-Player MVP ✅ COMPLETE**
-
     - [x] Implement grid-based player movement on extended 7x7 area (5x5 board + stations)
     - [x] Create comprehensive UI with start screen, tutorial, timer, and modal dialogs
     - [x] Implement Number Stations (1-9) with randomized positioning and shuffling
@@ -143,22 +146,28 @@ We will follow an iterative development process, starting with the core experien
     - [x] **BONUS**: Time attack mode, dynamic station shuffling, professional polish
     - **Status:** Fully playable single-player experience with advanced features!
 
-2.  **Milestone 2: Multiplayer Foundation**
+2.  **Milestone 2: Local Multiplayer VS Mode ✅ COMPLETE**
+    - [x] Implement dual player controls (Player 1: WASD+Space, Player 2: Arrows+Enter)
+    - [x] Add box ownership system with player color coding (red/blue)
+    - [x] Implement competitive blocking mechanics - opponents cannot reuse claimed squares
+    - [x] Add endgame mode when board fills without bingo (sharing enabled)
+    - [x] Create first-to-bingo win condition with proper VS mode UI
+    - [x] Update start scene with game mode selection (Single Player vs VS Mode)
+    - **Status:** Fully playable local 2-player competitive experience!
 
-    - [ ] Implement local multiplayer (2-4 players) with shared board coordination
-    - [ ] Add player collision, collaboration mechanics, and resource competition
-    - [ ] Implement versus mode with separate boards and competitive elements
-    - [ ] Refine Co-op and VS mode balance based on playtesting
+3.  **Milestone 3: Multiplayer Foundation (Future)**
+    - [ ] Implement local cooperative multiplayer (2-4 players) with shared board
+    - [ ] Add player collision and enhanced collaboration mechanics
+    - [ ] Extend VS mode to support 3-4 players with separate boards
+    - [ ] Implement resource competition and workbench stealing mechanics
 
-3.  **Milestone 3: Content Expansion & Polish**
-
+4.  **Milestone 4: Content Expansion & Polish**
     - [ ] Add art assets, sound effects, and music.
     - [ ] Create multiple levels with different layouts or challenges.
     - [ ] Design the number-calling sequence to have a smooth difficulty curve.
     - [ ] Refine UI/UX.
 
-4.  **Milestone 4: Online Multiplayer**
-
+5.  **Milestone 5: Online Multiplayer**
     - [ ] Integrate a networking solution.
     - [ ] Implement logic for synchronizing game state over the internet.
     - [ ] Create lobby and matchmaking systems.
