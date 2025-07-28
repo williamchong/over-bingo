@@ -1,15 +1,15 @@
 import Phaser from "phaser";
+import {
+  Player,
+  NumberStation,
+  OperatorStation,
+  BinStation,
+} from "../entities";
 
 export class GameScene extends Phaser.Scene {
-  private player1!: Phaser.GameObjects.Container;
-  private player1Rect!: Phaser.GameObjects.Rectangle;
-  private player1NumberText!: Phaser.GameObjects.Text;
-  private player2!: Phaser.GameObjects.Container;
-  private player2Rect!: Phaser.GameObjects.Rectangle;
-  private player2NumberText!: Phaser.GameObjects.Text;
+  private player1!: Player;
+  private player2!: Player;
   private bingoBoard: Phaser.GameObjects.Rectangle[][] = [];
-  private player1Position = { x: 2, y: 2 };
-  private player2Position = { x: 3, y: 3 };
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private wasdKeys!: {
     W: Phaser.Input.Keyboard.Key;
@@ -19,27 +19,9 @@ export class GameScene extends Phaser.Scene {
   };
   private calledNumberText!: Phaser.GameObjects.Text;
   private currentCalledNumber: number = 0;
-  private numberStations: {
-    x: number;
-    y: number;
-    number: number;
-    obj: Phaser.GameObjects.Container;
-  }[] = [];
-  private processingStations: {
-    x: number;
-    y: number;
-    obj: Phaser.GameObjects.Container;
-    heldNumber: number | null;
-    numberText: Phaser.GameObjects.Text | null;
-    operation: string;
-  }[] = [];
-  private rubbishBin: {
-    x: number;
-    y: number;
-    obj: Phaser.GameObjects.Container;
-  } | null = null;
-  private player1HeldNumber: number | null = null;
-  private player2HeldNumber: number | null = null;
+  private numberStations: NumberStation[] = [];
+  private processingStations: OperatorStation[] = [];
+  private rubbishBin: BinStation | null = null;
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private enterKey!: Phaser.Input.Keyboard.Key;
   private boardState: (number | "p1" | "p2" | null)[][] = [];
@@ -55,11 +37,8 @@ export class GameScene extends Phaser.Scene {
 
   private readonly GRID_SIZE = 5;
   private readonly CELL_SIZE = 80;
-  private readonly EXTENDED_GRID_SIZE = 7; // 5x5 board + 1 cell on each side for stations
   private readonly BOARD_START_X = (800 - 4 * 80) / 2; // Center the 5x5 board horizontally
   private readonly BOARD_START_Y = (600 - 5 * 80) / 2; // Center the 5x5 board vertically
-  private readonly EXTENDED_START_X = this.BOARD_START_X - this.CELL_SIZE; // Extended grid starts 1 cell to the left
-  private readonly EXTENDED_START_Y = this.BOARD_START_Y - this.CELL_SIZE; // Extended grid starts 1 cell above
 
   constructor() {
     super({ key: "GameScene" });
@@ -127,71 +106,29 @@ export class GameScene extends Phaser.Scene {
   private createPlayers() {
     if (this.gameMode === "single") {
       // Single player mode - only create player 1
-      this.player1Position = { x: 3, y: 3 };
-      const startX =
-        this.EXTENDED_START_X + this.player1Position.x * this.CELL_SIZE;
-      const startY =
-        this.EXTENDED_START_Y + this.player1Position.y * this.CELL_SIZE;
-
-      this.player1 = this.add.container(startX, startY);
-      this.player1Rect = this.add.rectangle(0, 0, 20, 20, 0xe74c3c);
-      this.player1Rect.setAlpha(0.7);
-
-      this.player1NumberText = this.add
-        .text(0, -15, "", {
-          fontSize: "12px",
-          color: "#f1c40f",
-          fontStyle: "bold",
-        })
-        .setOrigin(0.5)
-        .setVisible(false);
-
-      this.player1.add([this.player1Rect, this.player1NumberText]);
+      this.player1 = new Player(
+        1,
+        this,
+        { x: 3, y: 3 },
+        0xe74c3c,
+        this.gameMode,
+      );
     } else {
       // VS mode - create both players
-      // Player 1 (red, WASD+Space)
-      this.player1Position = { x: 2, y: 2 };
-      const p1StartX =
-        this.EXTENDED_START_X + this.player1Position.x * this.CELL_SIZE;
-      const p1StartY =
-        this.EXTENDED_START_Y + this.player1Position.y * this.CELL_SIZE;
-
-      this.player1 = this.add.container(p1StartX, p1StartY);
-      this.player1Rect = this.add.rectangle(0, 0, 18, 18, 0xe74c3c);
-      this.player1Rect.setAlpha(0.8);
-
-      this.player1NumberText = this.add
-        .text(0, -15, "", {
-          fontSize: "11px",
-          color: "#f1c40f",
-          fontStyle: "bold",
-        })
-        .setOrigin(0.5)
-        .setVisible(false);
-
-      this.player1.add([this.player1Rect, this.player1NumberText]);
-
-      // Player 2 (blue, Arrow+Enter)
-      this.player2Position = { x: 3, y: 3 };
-      const p2StartX =
-        this.EXTENDED_START_X + this.player2Position.x * this.CELL_SIZE;
-      const p2StartY =
-        this.EXTENDED_START_Y + this.player2Position.y * this.CELL_SIZE;
-
-      this.player2 = this.add.container(p2StartX, p2StartY);
-      this.player2Rect = this.add.rectangle(0, 0, 18, 18, 0x3498db);
-      this.player2Rect.setAlpha(0.8);
-
-      this.player2NumberText = this.add
-        .text(0, -15, "", {
-          fontSize: "11px",
-          color: "#f39c12",
-          fontStyle: "bold",
-        })
-        .setOrigin(0.5)
-        .setVisible(false);
-
-      this.player2.add([this.player2Rect, this.player2NumberText]);
+      this.player1 = new Player(
+        1,
+        this,
+        { x: 2, y: 2 },
+        0xe74c3c,
+        this.gameMode,
+      );
+      this.player2 = new Player(
+        2,
+        this,
+        { x: 3, y: 3 },
+        0x3498db,
+        this.gameMode,
+      );
     }
   }
 
@@ -274,12 +211,9 @@ export class GameScene extends Phaser.Scene {
 
       container.add([bg, numberText]);
 
-      this.numberStations.push({
-        x: station.x,
-        y: station.y,
-        number: station.number,
-        obj: container,
-      });
+      this.numberStations.push(
+        new NumberStation(station.x, station.y, container, station.number),
+      );
     });
   }
 
@@ -329,14 +263,14 @@ export class GameScene extends Phaser.Scene {
 
       container.add([bg, operationText]);
 
-      this.processingStations.push({
-        x: stationData.x,
-        y: stationData.y,
-        obj: container,
-        heldNumber: null,
-        numberText: null,
-        operation: stationData.operation,
-      });
+      this.processingStations.push(
+        new OperatorStation(
+          stationData.x,
+          stationData.y,
+          container,
+          stationData.operation,
+        ),
+      );
     });
   }
 
@@ -362,11 +296,7 @@ export class GameScene extends Phaser.Scene {
 
     container.add([bg, lid, trashText]);
 
-    this.rubbishBin = {
-      x: binX,
-      y: binY,
-      obj: container,
-    };
+    this.rubbishBin = new BinStation(binX, binY, container);
   }
 
   private createUI() {
@@ -503,118 +433,49 @@ export class GameScene extends Phaser.Scene {
   private handlePlayerMovement() {
     if (this.gameMode === "single") {
       // Single player movement (both WASD and Arrow keys)
-      let moved = false;
-
       if (
-        (Phaser.Input.Keyboard.JustDown(this.cursors.left!) ||
-          Phaser.Input.Keyboard.JustDown(this.wasdKeys.A)) &&
-        this.player1Position.x > 0
+        Phaser.Input.Keyboard.JustDown(this.cursors.left!) ||
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.A)
       ) {
-        this.player1Position.x--;
-        moved = true;
+        this.player1.move("left");
       } else if (
-        (Phaser.Input.Keyboard.JustDown(this.cursors.right!) ||
-          Phaser.Input.Keyboard.JustDown(this.wasdKeys.D)) &&
-        this.player1Position.x < this.EXTENDED_GRID_SIZE - 1
+        Phaser.Input.Keyboard.JustDown(this.cursors.right!) ||
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.D)
       ) {
-        this.player1Position.x++;
-        moved = true;
+        this.player1.move("right");
       } else if (
-        (Phaser.Input.Keyboard.JustDown(this.cursors.up!) ||
-          Phaser.Input.Keyboard.JustDown(this.wasdKeys.W)) &&
-        this.player1Position.y > 0
+        Phaser.Input.Keyboard.JustDown(this.cursors.up!) ||
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.W)
       ) {
-        this.player1Position.y--;
-        moved = true;
+        this.player1.move("up");
       } else if (
-        (Phaser.Input.Keyboard.JustDown(this.cursors.down!) ||
-          Phaser.Input.Keyboard.JustDown(this.wasdKeys.S)) &&
-        this.player1Position.y < this.EXTENDED_GRID_SIZE - 1
+        Phaser.Input.Keyboard.JustDown(this.cursors.down!) ||
+        Phaser.Input.Keyboard.JustDown(this.wasdKeys.S)
       ) {
-        this.player1Position.y++;
-        moved = true;
-      }
-
-      if (moved) {
-        const newX =
-          this.EXTENDED_START_X + this.player1Position.x * this.CELL_SIZE;
-        const newY =
-          this.EXTENDED_START_Y + this.player1Position.y * this.CELL_SIZE;
-        this.player1.setPosition(newX, newY);
+        this.player1.move("down");
       }
     } else {
       // VS mode - separate controls for each player
-      let p1Moved = false;
-      let p2Moved = false;
-
       // Player 1 movement (WASD)
-      if (
-        Phaser.Input.Keyboard.JustDown(this.wasdKeys.A) &&
-        this.player1Position.x > 0
-      ) {
-        this.player1Position.x--;
-        p1Moved = true;
-      } else if (
-        Phaser.Input.Keyboard.JustDown(this.wasdKeys.D) &&
-        this.player1Position.x < this.EXTENDED_GRID_SIZE - 1
-      ) {
-        this.player1Position.x++;
-        p1Moved = true;
-      } else if (
-        Phaser.Input.Keyboard.JustDown(this.wasdKeys.W) &&
-        this.player1Position.y > 0
-      ) {
-        this.player1Position.y--;
-        p1Moved = true;
-      } else if (
-        Phaser.Input.Keyboard.JustDown(this.wasdKeys.S) &&
-        this.player1Position.y < this.EXTENDED_GRID_SIZE - 1
-      ) {
-        this.player1Position.y++;
-        p1Moved = true;
+      if (Phaser.Input.Keyboard.JustDown(this.wasdKeys.A)) {
+        this.player1.move("left");
+      } else if (Phaser.Input.Keyboard.JustDown(this.wasdKeys.D)) {
+        this.player1.move("right");
+      } else if (Phaser.Input.Keyboard.JustDown(this.wasdKeys.W)) {
+        this.player1.move("up");
+      } else if (Phaser.Input.Keyboard.JustDown(this.wasdKeys.S)) {
+        this.player1.move("down");
       }
 
       // Player 2 movement (Arrow keys)
-      if (
-        Phaser.Input.Keyboard.JustDown(this.cursors.left!) &&
-        this.player2Position.x > 0
-      ) {
-        this.player2Position.x--;
-        p2Moved = true;
-      } else if (
-        Phaser.Input.Keyboard.JustDown(this.cursors.right!) &&
-        this.player2Position.x < this.EXTENDED_GRID_SIZE - 1
-      ) {
-        this.player2Position.x++;
-        p2Moved = true;
-      } else if (
-        Phaser.Input.Keyboard.JustDown(this.cursors.up!) &&
-        this.player2Position.y > 0
-      ) {
-        this.player2Position.y--;
-        p2Moved = true;
-      } else if (
-        Phaser.Input.Keyboard.JustDown(this.cursors.down!) &&
-        this.player2Position.y < this.EXTENDED_GRID_SIZE - 1
-      ) {
-        this.player2Position.y++;
-        p2Moved = true;
-      }
-
-      if (p1Moved) {
-        const newX =
-          this.EXTENDED_START_X + this.player1Position.x * this.CELL_SIZE;
-        const newY =
-          this.EXTENDED_START_Y + this.player1Position.y * this.CELL_SIZE;
-        this.player1.setPosition(newX, newY);
-      }
-
-      if (p2Moved) {
-        const newX =
-          this.EXTENDED_START_X + this.player2Position.x * this.CELL_SIZE;
-        const newY =
-          this.EXTENDED_START_Y + this.player2Position.y * this.CELL_SIZE;
-        this.player2.setPosition(newX, newY);
+      if (Phaser.Input.Keyboard.JustDown(this.cursors.left!)) {
+        this.player2.move("left");
+      } else if (Phaser.Input.Keyboard.JustDown(this.cursors.right!)) {
+        this.player2.move("right");
+      } else if (Phaser.Input.Keyboard.JustDown(this.cursors.up!)) {
+        this.player2.move("up");
+      } else if (Phaser.Input.Keyboard.JustDown(this.cursors.down!)) {
+        this.player2.move("down");
       }
     }
   }
@@ -643,36 +504,21 @@ export class GameScene extends Phaser.Scene {
   }
 
   private handlePlayerInteraction(playerNum: 1 | 2) {
-    const playerPosition =
-      playerNum === 1 ? this.player1Position : this.player2Position;
-    const playerHeldNumber =
-      playerNum === 1 ? this.player1HeldNumber : this.player2HeldNumber;
-
-    const playerWorldX =
-      this.EXTENDED_START_X + playerPosition.x * this.CELL_SIZE;
-    const playerWorldY =
-      this.EXTENDED_START_Y + playerPosition.y * this.CELL_SIZE;
+    const player = playerNum === 1 ? this.player1 : this.player2;
+    const playerWorldPos = player.getWorldPosition();
 
     // Check if standing exactly on a number station
     for (const station of this.numberStations) {
-      if (playerWorldX === station.x && playerWorldY === station.y) {
-        if (playerHeldNumber === null) {
-          // Pick up number
-          if (playerNum === 1) {
-            this.player1HeldNumber = station.number;
-          } else {
-            this.player2HeldNumber = station.number;
-          }
-          this.updateHeldNumberDisplay(playerNum);
-        }
+      if (playerWorldPos.x === station.x && playerWorldPos.y === station.y) {
+        station.interact(player);
         return;
       }
     }
 
     // Check if standing exactly on a processing station
     for (const station of this.processingStations) {
-      if (playerWorldX === station.x && playerWorldY === station.y) {
-        this.handleProcessingStationInteraction(station, playerNum);
+      if (playerWorldPos.x === station.x && playerWorldPos.y === station.y) {
+        station.interact(player);
         return;
       }
     }
@@ -680,52 +526,26 @@ export class GameScene extends Phaser.Scene {
     // Check if standing exactly on rubbish bin
     if (
       this.rubbishBin &&
-      playerWorldX === this.rubbishBin.x &&
-      playerWorldY === this.rubbishBin.y
+      playerWorldPos.x === this.rubbishBin.x &&
+      playerWorldPos.y === this.rubbishBin.y
     ) {
-      this.handleRubbishBinInteraction(playerNum);
+      this.rubbishBin.interact(player);
       return;
     }
 
     // If standing on the bingo board and holding a number, try to place it
-    if (playerHeldNumber !== null && this.isOnBingoBoard(playerPosition)) {
+    if (player.heldNumber !== null && player.isOnBingoBoard()) {
       this.tryPlaceNumberOnBoard(playerNum);
     }
   }
 
-  private isOnBingoBoard(playerPosition: { x: number; y: number }): boolean {
-    // Check if player is within the 5x5 bingo board area (positions 1-5 in extended grid)
-    return (
-      playerPosition.x >= 1 &&
-      playerPosition.x <= 5 &&
-      playerPosition.y >= 1 &&
-      playerPosition.y <= 5
-    );
-  }
-
-  private updateHeldNumberDisplay(playerNum: 1 | 2) {
-    const playerHeldNumber =
-      playerNum === 1 ? this.player1HeldNumber : this.player2HeldNumber;
-    const playerNumberText =
-      playerNum === 1 ? this.player1NumberText : this.player2NumberText;
-
-    if (playerHeldNumber !== null) {
-      playerNumberText.setText(playerHeldNumber.toString());
-      playerNumberText.setVisible(true);
-    } else {
-      playerNumberText.setVisible(false);
-    }
-  }
-
   private tryPlaceNumberOnBoard(playerNum: 1 | 2) {
-    const playerPosition =
-      playerNum === 1 ? this.player1Position : this.player2Position;
-    const playerHeldNumber =
-      playerNum === 1 ? this.player1HeldNumber : this.player2HeldNumber;
+    const player = playerNum === 1 ? this.player1 : this.player2;
+    const playerHeldNumber = player.heldNumber;
 
     // Convert extended grid position to bingo board position
-    const row = playerPosition.y - 1; // Extended grid is offset by 1
-    const col = playerPosition.x - 1; // Extended grid is offset by 1
+    const row = player.position.y - 1; // Extended grid is offset by 1
+    const col = player.position.x - 1; // Extended grid is offset by 1
 
     const currentCell = this.bingoBoard[row][col];
     const currentState = this.boardState[row][col];
@@ -784,12 +604,8 @@ export class GameScene extends Phaser.Scene {
       this.placedNumberTexts[row][col] = numberText;
 
       // Clear player's held number
-      if (playerNum === 1) {
-        this.player1HeldNumber = null;
-      } else {
-        this.player2HeldNumber = null;
-      }
-      this.updateHeldNumberDisplay(playerNum);
+      player.heldNumber = null;
+      player.updateHeldNumberDisplay();
 
       // Check for bingo
       if (this.checkForBingo(playerNum)) {
@@ -894,9 +710,7 @@ export class GameScene extends Phaser.Scene {
 
     // Update station positions
     this.numberStations.forEach((station, index) => {
-      station.x = positions[index].x;
-      station.y = positions[index].y;
-      station.obj.setPosition(station.x, station.y);
+      station.setPosition(positions[index].x, positions[index].y);
     });
   }
 
@@ -929,14 +743,7 @@ export class GameScene extends Phaser.Scene {
 
     // Update operation station positions
     this.processingStations.forEach((station, index) => {
-      station.x = positions[index].x;
-      station.y = positions[index].y;
-      station.obj.setPosition(station.x, station.y);
-
-      // If station has a number display, update its position too
-      if (station.numberText) {
-        station.numberText.setPosition(station.x - 20, station.y + 35);
-      }
+      station.setPosition(positions[index].x, positions[index].y);
     });
   }
 
@@ -972,148 +779,6 @@ export class GameScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
     });
-  }
-
-  private handleProcessingStationInteraction(
-    station: {
-      x: number;
-      y: number;
-      obj: Phaser.GameObjects.Container;
-      heldNumber: number | null;
-      numberText: Phaser.GameObjects.Text | null;
-      operation: string;
-    },
-    playerNum: 1 | 2,
-  ) {
-    const playerHeldNumber =
-      playerNum === 1 ? this.player1HeldNumber : this.player2HeldNumber;
-
-    if (playerHeldNumber !== null) {
-      if (station.heldNumber === null) {
-        // Place first number at station
-        station.heldNumber = playerHeldNumber;
-        if (playerNum === 1) {
-          this.player1HeldNumber = null;
-        } else {
-          this.player2HeldNumber = null;
-        }
-        this.updateHeldNumberDisplay(playerNum);
-
-        // Create and store the number display text
-        station.numberText = this.add
-          .text(station.x - 20, station.y + 35, station.heldNumber.toString(), {
-            fontSize: "14px",
-            color: "#f1c40f",
-            fontStyle: "bold",
-          })
-          .setOrigin(0.5);
-      } else {
-        // Perform operation with second number
-        let result: number;
-
-        switch (station.operation) {
-          case "+":
-            result = station.heldNumber + playerHeldNumber;
-            break;
-          case "-":
-            result = station.heldNumber - playerHeldNumber;
-            break;
-          case "×":
-            result = station.heldNumber * playerHeldNumber;
-            break;
-          case "÷":
-            result = Math.floor(station.heldNumber / playerHeldNumber);
-            break;
-          default:
-            result = station.heldNumber + playerHeldNumber;
-        }
-
-        // Clear the station number and display
-        station.heldNumber = null;
-        if (station.numberText) {
-          station.numberText.destroy();
-          station.numberText = null;
-        }
-
-        // Give player the result
-        if (playerNum === 1) {
-          this.player1HeldNumber = result;
-        } else {
-          this.player2HeldNumber = result;
-        }
-        this.updateHeldNumberDisplay(playerNum);
-      }
-    } else {
-      // Pick up number from station if there is one
-      if (station.heldNumber !== null) {
-        if (playerNum === 1) {
-          this.player1HeldNumber = station.heldNumber;
-        } else {
-          this.player2HeldNumber = station.heldNumber;
-        }
-        station.heldNumber = null;
-
-        // Clear the number display
-        if (station.numberText) {
-          station.numberText.destroy();
-          station.numberText = null;
-        }
-
-        this.updateHeldNumberDisplay(playerNum);
-      }
-    }
-  }
-
-  private handleRubbishBinInteraction(playerNum: 1 | 2) {
-    if (!this.rubbishBin) return;
-
-    const playerHeldNumber =
-      playerNum === 1 ? this.player1HeldNumber : this.player2HeldNumber;
-
-    // Only allow disposing if player is holding a number
-    if (playerHeldNumber !== null) {
-      // Visual feedback - flash the bin
-      const binObj = this.rubbishBin.obj;
-      binObj.setScale(1.1);
-
-      // Create disposal effect
-      const disposalText = this.add
-        .text(
-          this.rubbishBin.x,
-          this.rubbishBin.y - 40,
-          "-" + playerHeldNumber,
-          {
-            fontSize: "16px",
-            color: "#e74c3c",
-            fontStyle: "bold",
-          },
-        )
-        .setOrigin(0.5);
-
-      // Animate disposal text
-      this.tweens.add({
-        targets: disposalText,
-        y: this.rubbishBin.y - 80,
-        alpha: 0,
-        duration: 1000,
-        onComplete: () => {
-          disposalText.destroy();
-        },
-      });
-
-      // Reset bin scale
-      this.time.delayedCall(200, () => {
-        binObj.setScale(1);
-      });
-
-      // Destroy the held number
-      if (playerNum === 1) {
-        this.player1HeldNumber = null;
-      } else {
-        this.player2HeldNumber = null;
-      }
-      this.updateHeldNumberDisplay(playerNum);
-    }
   }
 
   private checkForBingo(playerNum?: 1 | 2): boolean {
