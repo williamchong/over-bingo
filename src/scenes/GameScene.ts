@@ -487,6 +487,10 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    // HACK: Not sure why this.time.now is 0 in create()
+    if (!this.startTime) {
+      this.startTime = this.time.now;
+    }
     this.currentTime = this.time.now - this.startTime;
     const seconds = Math.floor(this.currentTime / 1000);
     const minutes = Math.floor(seconds / 60);
