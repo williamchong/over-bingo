@@ -17,15 +17,14 @@ export class GameScene extends Phaser.Scene {
     S: Phaser.Input.Keyboard.Key;
     D: Phaser.Input.Keyboard.Key;
   };
-  private calledNumberText!: Phaser.GameObjects.Text;
-  private currentCalledNumber: number = 0;
   private numberStations: NumberStation[] = [];
   private processingStations: OperatorStation[] = [];
   private rubbishBin: BinStation | null = null;
   private spaceKey!: Phaser.Input.Keyboard.Key;
   private enterKey!: Phaser.Input.Keyboard.Key;
-  private boardState: (number | "p1" | "p2" | null)[][] = [];
-  private placedNumberTexts: (Phaser.GameObjects.Text | null)[][] = [];
+  private boardNumbers: number[][] = []; // Pre-filled board numbers
+  private boardState: ("p1" | "p2" | "claimed" | null)[][] = []; // Claim states
+  private numberTexts: Phaser.GameObjects.Text[][] = []; // Number display texts
   private gameMode: "single" | "vs" = "single";
   private isEndgameMode: boolean = false;
 
@@ -58,9 +57,6 @@ export class GameScene extends Phaser.Scene {
       this.gameStarted = false;
     }
 
-    // Initialize with first random number
-    this.currentCalledNumber = this.generateRandomNumber();
-
     this.createBingoBoard();
     this.createNumberStations();
     this.createProcessingStations();
@@ -71,33 +67,75 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createBingoBoard() {
-    // Initialize board state arrays
+    // Generate unique random numbers for the board (excluding center which is FREE)
+    const availableNumbers = [];
+    for (let i = 1; i <= 100; i++) {
+      availableNumbers.push(i);
+    }
+
+    // Shuffle the numbers
+    for (let i = availableNumbers.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [availableNumbers[i], availableNumbers[j]] = [
+        availableNumbers[j],
+        availableNumbers[i],
+      ];
+    }
+
+    let numberIndex = 0;
+
+    // Initialize board arrays
     for (let row = 0; row < this.GRID_SIZE; row++) {
       this.bingoBoard[row] = [];
+      this.boardNumbers[row] = [];
       this.boardState[row] = [];
-      this.placedNumberTexts[row] = [];
+      this.numberTexts[row] = [];
 
       for (let col = 0; col < this.GRID_SIZE; col++) {
         const x = this.BOARD_START_X + col * this.CELL_SIZE;
         const y = this.BOARD_START_Y + row * this.CELL_SIZE;
 
+        // Create cell background (grey for unclaimed)
         const cell = this.add
-          .rectangle(x, y, this.CELL_SIZE - 2, this.CELL_SIZE - 2, 0x34495e)
+          .rectangle(x, y, this.CELL_SIZE - 2, this.CELL_SIZE - 2, 0x7f8c8d)
           .setStrokeStyle(2, 0x2c3e50);
 
         this.bingoBoard[row][col] = cell;
         this.boardState[row][col] = null;
-        this.placedNumberTexts[row][col] = null;
 
-        // Mark center cell as "FREE" space
+        // Handle center cell as FREE space
         if (row === 2 && col === 2) {
-          this.boardState[row][col] = -1; // Special value for FREE space
-          this.add
+          this.boardNumbers[row][col] = 0; // Special value for FREE
+          this.boardState[row][col] =
+            this.gameMode === "single" ? "claimed" : null;
+
+          const freeText = this.add
             .text(x, y, "FREE", {
               fontSize: "16px",
               color: "#ecf0f1",
+              fontStyle: "bold",
             })
             .setOrigin(0.5);
+
+          this.numberTexts[row][col] = freeText;
+
+          if (this.gameMode === "single") {
+            cell.setFillStyle(0x27ae60); // Green for claimed in single player
+          }
+        } else {
+          // Assign random number to cell
+          this.boardNumbers[row][col] = availableNumbers[numberIndex++];
+
+          // Create number text (greyed out initially)
+          const numberText = this.add
+            .text(x, y, this.boardNumbers[row][col].toString(), {
+              fontSize: "20px",
+              color: "#95a5a6", // Grey color for unclaimed
+              fontStyle: "bold",
+            })
+            .setOrigin(0.5);
+
+          this.numberTexts[row][col] = numberText;
         }
       }
     }
@@ -300,23 +338,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createUI() {
-    // Called number display - centered at top, well above the board
     const centerX = this.cameras.main.width / 2;
-
-    this.add
-      .text(centerX, 20, "Called Number:", {
-        fontSize: "18px",
-        color: "#ecf0f1",
-      })
-      .setOrigin(0.5);
-
-    this.calledNumberText = this.add
-      .text(centerX, 45, this.currentCalledNumber.toString(), {
-        fontSize: "32px",
-        color: "#f39c12",
-        fontStyle: "bold",
-      })
-      .setOrigin(0.5);
 
     if (this.gameMode === "single") {
       // Timer display (top right) - single player only
@@ -377,7 +399,7 @@ export class GameScene extends Phaser.Scene {
         .text(
           centerX,
           this.cameras.main.height - 30,
-          "First to get BINGO wins! Block opponents by placing numbers.",
+          "First to get BINGO wins! Collect numbers and place them on matching cells.",
           {
             fontSize: "14px",
             color: "#bdc3c7",
@@ -533,13 +555,13 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    // If standing on the bingo board and holding a number, try to place it
+    // If standing on the bingo board and holding a number, try to claim it
     if (player.heldNumber !== null && player.isOnBingoBoard()) {
-      this.tryPlaceNumberOnBoard(playerNum);
+      this.tryClaimCell(playerNum);
     }
   }
 
-  private tryPlaceNumberOnBoard(playerNum: 1 | 2) {
+  private tryClaimCell(playerNum: 1 | 2) {
     const player = playerNum === 1 ? this.player1 : this.player2;
     const playerHeldNumber = player.heldNumber;
 
@@ -549,111 +571,98 @@ export class GameScene extends Phaser.Scene {
 
     const currentCell = this.bingoBoard[row][col];
     const currentState = this.boardState[row][col];
+    const cellNumber = this.boardNumbers[row][col];
+    const numberText = this.numberTexts[row][col];
+
+    // Skip FREE space
+    if (cellNumber === 0) {
+      return;
+    }
+
+    // Check if the player is holding the number that matches the board cell
+    if (playerHeldNumber !== cellNumber) {
+      // Wrong number for this cell - show red feedback
+      currentCell.setFillStyle(0xff6b6b);
+      this.time.delayedCall(500, () => {
+        this.restoreCellColor(row, col);
+      });
+      return;
+    }
 
     // VS mode logic
     if (this.gameMode === "vs") {
-      // Check if cell is already occupied by the other player
+      // Check if cell is already claimed by the other player
       if (currentState === "p1" || currentState === "p2") {
-        // In endgame mode, allow placing on occupied cells
-        if (!this.isEndgameMode && currentState !== `p${playerNum}`) {
-          // Cell occupied by other player - show red feedback
+        if (currentState !== `p${playerNum}`) {
+          // Cell claimed by other player - show red feedback
           currentCell.setFillStyle(0xff6b6b);
           this.time.delayedCall(500, () => {
-            const playerColor = currentState === "p1" ? 0xe74c3c : 0x3498db;
-            currentCell.setFillStyle(playerColor);
+            this.restoreCellColor(row, col);
           });
+          return;
+        } else {
+          // Already claimed by this player
           return;
         }
       }
     } else {
-      // Single player mode - check if cell has any number
-      if (currentState !== null) {
-        currentCell.setFillStyle(0xff6b6b);
-        this.time.delayedCall(500, () => {
-          currentCell.setFillStyle(0x34495e);
-        });
+      // Single player mode - check if cell is already claimed
+      if (currentState === "claimed") {
         return;
       }
     }
 
-    if (playerHeldNumber === this.currentCalledNumber) {
-      // Correct number! Place it
-      const numberText = this.add
-        .text(
-          this.BOARD_START_X + col * this.CELL_SIZE,
-          this.BOARD_START_Y + row * this.CELL_SIZE,
-          playerHeldNumber.toString(),
-          {
-            fontSize: "20px",
-            color: "#ecf0f1",
-            fontStyle: "bold",
-          },
-        )
-        .setOrigin(0.5);
-
-      // Update board state
-      if (this.gameMode === "vs") {
-        this.boardState[row][col] = `p${playerNum}` as "p1" | "p2";
-        const cellColor = playerNum === 1 ? 0xe74c3c : 0x3498db;
-        currentCell.setFillStyle(cellColor);
-      } else {
-        this.boardState[row][col] = playerHeldNumber;
-        currentCell.setFillStyle(0x27ae60);
-      }
-
-      this.placedNumberTexts[row][col] = numberText;
-
-      // Clear player's held number
-      player.heldNumber = null;
-      player.updateHeldNumberDisplay();
-
-      // Check for bingo
-      if (this.checkForBingo(playerNum)) {
-        this.handleBingo(playerNum);
-      } else {
-        // Check if board is full in VS mode
-        if (
-          this.gameMode === "vs" &&
-          this.isBoardFull() &&
-          !this.isEndgameMode
-        ) {
-          this.enterEndgameMode();
-        } else {
-          // Call a new number immediately after successful placement
-          this.callNewNumber();
-        }
-      }
+    // Claim the cell!
+    if (this.gameMode === "vs") {
+      this.boardState[row][col] = `p${playerNum}` as "p1" | "p2";
+      const cellColor = playerNum === 1 ? 0xe74c3c : 0x3498db;
+      currentCell.setFillStyle(cellColor);
     } else {
-      // Wrong number - visual feedback but don't place
-      currentCell.setFillStyle(0xff6b6b);
-      this.time.delayedCall(500, () => {
-        if (this.gameMode === "vs") {
-          if (currentState === "p1") {
-            currentCell.setFillStyle(0xe74c3c);
-          } else if (currentState === "p2") {
-            currentCell.setFillStyle(0x3498db);
-          } else {
-            currentCell.setFillStyle(0x34495e);
-          }
-        } else {
-          currentCell.setFillStyle(0x34495e);
-        }
-      });
+      this.boardState[row][col] = "claimed";
+      currentCell.setFillStyle(0x27ae60); // Green for claimed
+    }
+
+    // Update number text to be white and bold
+    numberText.setColor("#ecf0f1");
+    numberText.setFontStyle("bold");
+
+    // Clear player's held number
+    player.heldNumber = null;
+    player.updateHeldNumberDisplay();
+
+    // Check for bingo
+    if (this.checkForBingo(playerNum)) {
+      this.handleBingo(playerNum);
+    } else {
+      // Check if board is full in VS mode
+      if (this.gameMode === "vs" && this.isBoardFull() && !this.isEndgameMode) {
+        this.enterEndgameMode();
+      }
+      // Shuffle station positions when number is placed
+      this.shuffleNumberStations();
+      this.shuffleOperationStations();
     }
   }
 
-  private generateRandomNumber(): number {
-    // Generate random number between 1 and 25 (reasonable range for bingo)
-    return Math.floor(Math.random() * 25) + 1;
-  }
+  private restoreCellColor(row: number, col: number) {
+    const currentState = this.boardState[row][col];
+    const currentCell = this.bingoBoard[row][col];
 
-  private callNewNumber() {
-    this.currentCalledNumber = this.generateRandomNumber();
-    this.calledNumberText.setText(this.currentCalledNumber.toString());
-
-    // Shuffle station positions when new number is called
-    this.shuffleNumberStations();
-    this.shuffleOperationStations();
+    if (this.gameMode === "vs") {
+      if (currentState === "p1") {
+        currentCell.setFillStyle(0xe74c3c);
+      } else if (currentState === "p2") {
+        currentCell.setFillStyle(0x3498db);
+      } else {
+        currentCell.setFillStyle(0x7f8c8d); // Grey for unclaimed
+      }
+    } else {
+      if (currentState === "claimed") {
+        currentCell.setFillStyle(0x27ae60); // Green for claimed
+      } else {
+        currentCell.setFillStyle(0x7f8c8d); // Grey for unclaimed
+      }
+    }
   }
 
   private shuffleNumberStations() {
@@ -796,7 +805,7 @@ export class GameScene extends Phaser.Scene {
     for (let row = 0; row < this.GRID_SIZE; row++) {
       let hasRow = true;
       for (let col = 0; col < this.GRID_SIZE; col++) {
-        if (this.boardState[row][col] === null) {
+        if (this.boardState[row][col] !== "claimed") {
           hasRow = false;
           break;
         }
@@ -808,7 +817,7 @@ export class GameScene extends Phaser.Scene {
     for (let col = 0; col < this.GRID_SIZE; col++) {
       let hasCol = true;
       for (let row = 0; row < this.GRID_SIZE; row++) {
-        if (this.boardState[row][col] === null) {
+        if (this.boardState[row][col] !== "claimed") {
           hasCol = false;
           break;
         }
@@ -819,7 +828,7 @@ export class GameScene extends Phaser.Scene {
     // Check diagonal (top-left to bottom-right)
     let hasDiag1 = true;
     for (let i = 0; i < this.GRID_SIZE; i++) {
-      if (this.boardState[i][i] === null) {
+      if (this.boardState[i][i] !== "claimed") {
         hasDiag1 = false;
         break;
       }
@@ -829,7 +838,7 @@ export class GameScene extends Phaser.Scene {
     // Check diagonal (top-right to bottom-left)
     let hasDiag2 = true;
     for (let i = 0; i < this.GRID_SIZE; i++) {
-      if (this.boardState[i][this.GRID_SIZE - 1 - i] === null) {
+      if (this.boardState[i][this.GRID_SIZE - 1 - i] !== "claimed") {
         hasDiag2 = false;
         break;
       }

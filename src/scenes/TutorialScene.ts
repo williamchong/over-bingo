@@ -57,7 +57,7 @@ export class TutorialScene extends Phaser.Scene {
         )
         .setOrigin(0.5),
       this.add
-        .text(centerX, 260, "• A called number will be displayed at the top", {
+        .text(centerX, 260, "• The board is pre-filled with random numbers", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
@@ -66,7 +66,7 @@ export class TutorialScene extends Phaser.Scene {
         .text(
           centerX,
           290,
-          "• You must create this number using math operations",
+          "• Create numbers using math to match board cells",
           {
             fontSize: "16px",
             color: "#bdc3c7",
@@ -74,10 +74,15 @@ export class TutorialScene extends Phaser.Scene {
         )
         .setOrigin(0.5),
       this.add
-        .text(centerX, 320, "• Then place it on the correct bingo square", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          320,
+          "• Claim cells by placing matching numbers on them",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
     ]);
     this.pageContent.push(page1);
@@ -166,59 +171,44 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 190, "If the called number is 7:", {
+        .text(centerX, 190, "To claim a cell with number 7:", {
           fontSize: "18px",
           color: "#f39c12",
           fontStyle: "bold",
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 230, "1. Get number 3 from a green station", {
+        .text(centerX, 230, "1. Find a cell on the board containing '7'", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
         .setOrigin(0.5),
       this.add
-        .text(
-          centerX,
-          260,
-          "2. Go to purple station, press SPACE/ENTER to drop it",
-          {
-            fontSize: "16px",
-            color: "#bdc3c7",
-          },
-        )
-        .setOrigin(0.5),
-      this.add
-        .text(centerX, 290, "3. Get number 4 from a green station", {
+        .text(centerX, 260, "2. Get number 3 from a green station", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
         .setOrigin(0.5),
       this.add
-        .text(
-          centerX,
-          320,
-          "4. Return to purple station, press SPACE/ENTER (3+4=7)",
-          {
-            fontSize: "16px",
-            color: "#bdc3c7",
-          },
-        )
+        .text(centerX, 290, "3. Go to purple station and place the 3", {
+          fontSize: "16px",
+          color: "#bdc3c7",
+        })
         .setOrigin(0.5),
       this.add
-        .text(
-          centerX,
-          350,
-          "5. Move to empty bingo square, press SPACE/ENTER to place",
-          {
-            fontSize: "16px",
-            color: "#bdc3c7",
-          },
-        )
+        .text(centerX, 320, "4. Get number 4, return to station (3+4=7)", {
+          fontSize: "16px",
+          color: "#bdc3c7",
+        })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 380, "6. Repeat until you get BINGO!", {
+        .text(centerX, 350, "5. Move to the '7' cell and place your number 7", {
+          fontSize: "16px",
+          color: "#bdc3c7",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 380, "6. Stations shuffle, repeat for other numbers!", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
@@ -288,7 +278,7 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 410, "• Compete for resources at shared stations", {
+        .text(centerX, 410, "• Stations shuffle after each successful claim", {
           fontSize: "16px",
           color: "#bdc3c7",
         })

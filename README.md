@@ -42,32 +42,36 @@ Inspired by the cooperative chaos of _Overcooked_, Over-Bingo challenges players
 
 ## 1\. Game Concept
 
-Players control characters on a giant 5x5 bingo board. A series of numbers are called out, and players must find or create the correct number and place it onto a corresponding empty square on the board. The first player or team to achieve a "BINGO" (5 in a row, column, or diagonal) wins. The challenge comes from sourcing and creating the numbers, which involves picking up "raw" numbers and combining them at processing stations using arithmetic operations.
+Players control characters on a giant 5x5 bingo board that is pre-filled with random numbers. Players must collect or create numbers using raw numbers and processing stations, then place them on matching cells on the board to claim them. The first player or team to achieve a "BINGO" (5 in a row, column, or diagonal) wins. The challenge comes from strategically choosing which numbers to create and which cells to claim to form the best bingo lines while competing with other players.
 
 ## 2\. Core Gameplay Loop
 
-The game operates in a frantic, cyclical loop for each called number:
+The game operates in a frantic, cyclical loop:
 
-1.  **A Number is Called:** A new target number appears on the UI (e.g., "42").
-2.  **Gather Ingredients:** Players run to "Number Stations" located off the main board to pick up raw, single-digit numbers (e.g., '6', '7').
-3.  **Process the Numbers:** As the game progresses, the called numbers will be impossible to find raw. Players must take their gathered numbers to "Processing Stations" (`+`, `-`, `*`, `/`) to combine them.
+1.  **Random Number Generation:** A target number appears on the UI (e.g., "42") - this is the number players need to create.
+2.  **Survey the Board:** Players look at the pre-filled bingo board to find cells containing the target number (42).
+3.  **Gather Ingredients:** Players run to "Number Stations" located around the board to pick up raw, single-digit numbers (e.g., '6', '7').
+4.  **Process the Numbers:** Players take their gathered numbers to "Processing Stations" (`+`, `-`, `*`, `/`) to combine them.
     - _Example:_ To create `42`, a player might pick up a `6` and a `7`, take them to a Multiplication (`*`) station, and combine them to produce a `42`.
-4.  **Place the Final Number:** The player carries the finished number (`42`) to an empty, valid square on the bingo board and places it, marking the square for their team.
-5.  **New Number Called:** A new number is called, and the loop repeats until a bingo is achieved.
+5.  **Claim the Cell:** The player carries the finished number (`42`) to a board cell that also contains `42` and places it there, claiming that cell for their team.
+6.  **Station Shuffle:** After a successful claim, all number and processing stations shuffle to new positions.
+7.  **Repeat:** Players continue targeting strategically important numbers until someone achieves a bingo.
 
 ## 3\. Key Mechanics
 
 ### 3.1 The Bingo Board: The World
 
 - The primary game area is a 5x5 grid where players move freely.
-- Each of the 25 squares acts as a potential drop-off point for a number.
-- The central square can be a traditional "Free Space," automatically filled for all players at the start of the game.
+- Each square is pre-filled with a random number (1-100) at the start of the game.
+- The central square is a traditional "Free Space," automatically claimed for all players.
+- Unclaimed squares appear greyed out, while claimed squares are highlighted in the player's color.
 
-### 3.2 Called Numbers: The Objective
+### 3.2 Strategic Number Selection
 
-- Displayed prominently on the side of the screen.
-- This is the "order" that players must fulfill.
-- The sequence of called numbers is pre-determined or randomized for replayability.
+- Players can choose any number on the board to target based on their bingo strategy.
+- Numbers range from 1-100, providing variety in mathematical challenges.
+- Players must create the exact number shown on a cell to claim it.
+- Strategic players will target numbers that help form multiple potential bingo lines.
 
 ### 3.3 Number Stations & Processing
 
