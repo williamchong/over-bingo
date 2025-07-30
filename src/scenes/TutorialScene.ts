@@ -2,7 +2,7 @@ import Phaser from "phaser";
 
 export class TutorialScene extends Phaser.Scene {
   private currentPage = 0;
-  private readonly totalPages = 4;
+  private readonly totalPages = 5;
   private pageContent: Phaser.GameObjects.Container[] = [];
 
   constructor() {
@@ -57,16 +57,21 @@ export class TutorialScene extends Phaser.Scene {
         )
         .setOrigin(0.5),
       this.add
-        .text(centerX, 260, "• The board is pre-filled with random numbers", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          260,
+          "• Board has numbers but most are hidden ('?' symbols)",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
       this.add
         .text(
           centerX,
           290,
-          "• Create numbers using math to match board cells",
+          "• Only 1-2 smallest numbers are visible at start",
           {
             fontSize: "16px",
             color: "#bdc3c7",
@@ -77,7 +82,7 @@ export class TutorialScene extends Phaser.Scene {
         .text(
           centerX,
           320,
-          "• Claim cells by placing matching numbers on them",
+          "• Claiming a cell reveals 8 adjacent cells around it",
           {
             fontSize: "16px",
             color: "#bdc3c7",
@@ -171,52 +176,62 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 190, "To claim a cell with number 7:", {
+        .text(centerX, 190, "Example: Early Game Strategy", {
           fontSize: "18px",
           color: "#f39c12",
           fontStyle: "bold",
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 230, "1. Find a cell on the board containing '7'", {
+        .text(
+          centerX,
+          230,
+          "1. Look for revealed numbers (only 1-2 visible at start)",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 260, "2. Say smallest revealed number is '7'", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 260, "2. Get number 3 from a green station", {
+        .text(centerX, 290, "3. Create the number 7 using math stations", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 290, "3. Go to purple station and place the 3", {
+        .text(centerX, 320, "4. Stand on the '7' cell and claim it", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 320, "4. Get number 4, return to station (3+4=7)", {
+        .text(centerX, 350, "5. All 8 cells around it are now revealed!", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 350, "5. Move to the '7' cell and place your number 7", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
-        .setOrigin(0.5),
-      this.add
-        .text(centerX, 380, "6. Stations shuffle, repeat for other numbers!", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          380,
+          "6. Choose next target from newly revealed numbers",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
     ]);
     this.pageContent.push(page3);
 
-    // Page 4: VS Mode
+    // Page 4: Progressive Reveal System
     const page4 = this.add.container(0, 0);
     page4.add([
       this.add
@@ -227,7 +242,85 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 140, "Page 4: VS Mode", {
+        .text(centerX, 140, "Page 4: Discovery Mechanics", {
+          fontSize: "20px",
+          color: "#ecf0f1",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 190, "HIDDEN vs REVEALED CELLS:", {
+          fontSize: "18px",
+          color: "#f39c12",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(
+          centerX,
+          220,
+          "• Hidden cells show '?' - you cannot claim these",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
+        .setOrigin(0.5),
+      this.add
+        .text(
+          centerX,
+          250,
+          "• Revealed cells show actual numbers - claimable",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 290, "EXPANSION STRATEGY:", {
+          fontSize: "18px",
+          color: "#27ae60",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 320, "• Each claim reveals 8 surrounding cells", {
+          fontSize: "16px",
+          color: "#bdc3c7",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(
+          centerX,
+          350,
+          "• Plan claims to reveal areas with bingo potential",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 380, "• Early game: focus on small, easy numbers", {
+          fontSize: "16px",
+          color: "#bdc3c7",
+        })
+        .setOrigin(0.5),
+    ]);
+    this.pageContent.push(page4);
+
+    // Page 5: VS Mode
+    const page5 = this.add.container(0, 0);
+    page5.add([
+      this.add
+        .text(centerX, 80, "HOW TO PLAY", {
+          fontSize: "32px",
+          color: "#f39c12",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 140, "Page 5: VS Mode", {
           fontSize: "20px",
           color: "#ecf0f1",
         })
@@ -272,19 +365,29 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 380, "• Claimed squares block your opponent", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          380,
+          "• Each player's claims reveal new areas to explore",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
       this.add
-        .text(centerX, 410, "• Stations shuffle after each successful claim", {
-          fontSize: "16px",
-          color: "#bdc3c7",
-        })
+        .text(
+          centerX,
+          410,
+          "• Strategic claiming opens up board for both players",
+          {
+            fontSize: "16px",
+            color: "#bdc3c7",
+          },
+        )
         .setOrigin(0.5),
     ]);
-    this.pageContent.push(page4);
+    this.pageContent.push(page5);
   }
 
   private createNavigation() {

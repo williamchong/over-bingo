@@ -25,6 +25,7 @@ export class GameScene extends Phaser.Scene {
   private boardNumbers: number[][] = []; // Pre-filled board numbers
   private boardState: ("p1" | "p2" | "claimed" | null)[][] = []; // Claim states
   private numberTexts: Phaser.GameObjects.Text[][] = []; // Number display texts
+  private boardRevealed: boolean[][] = []; // Which numbers are revealed
   private gameMode: "single" | "vs" = "single";
   private isEndgameMode: boolean = false;
 
@@ -90,15 +91,16 @@ export class GameScene extends Phaser.Scene {
       this.boardNumbers[row] = [];
       this.boardState[row] = [];
       this.numberTexts[row] = [];
+      this.boardRevealed[row] = [];
 
       for (let col = 0; col < this.GRID_SIZE; col++) {
         const x = this.BOARD_START_X + col * this.CELL_SIZE;
         const y = this.BOARD_START_Y + row * this.CELL_SIZE;
 
-        // Create cell background (grey for unclaimed)
+        // Create cell background (darker for hidden initially)
         const cell = this.add
-          .rectangle(x, y, this.CELL_SIZE - 2, this.CELL_SIZE - 2, 0x7f8c8d)
-          .setStrokeStyle(2, 0x2c3e50);
+          .rectangle(x, y, this.CELL_SIZE - 2, this.CELL_SIZE - 2, 0x2c3e50)
+          .setStrokeStyle(2, 0x34495e);
 
         this.bingoBoard[row][col] = cell;
         this.boardState[row][col] = null;
@@ -108,6 +110,7 @@ export class GameScene extends Phaser.Scene {
           this.boardNumbers[row][col] = 0; // Special value for FREE
           this.boardState[row][col] =
             this.gameMode === "single" ? "claimed" : null;
+          this.boardRevealed[row][col] = true; // FREE space is always revealed
 
           const freeText = this.add
             .text(x, y, "FREE", {
@@ -125,17 +128,113 @@ export class GameScene extends Phaser.Scene {
         } else {
           // Assign random number to cell
           this.boardNumbers[row][col] = availableNumbers[numberIndex++];
+          this.boardRevealed[row][col] = false; // Initially hidden
 
-          // Create number text (greyed out initially)
+          // Create placeholder text for hidden cell
           const numberText = this.add
-            .text(x, y, this.boardNumbers[row][col].toString(), {
+            .text(x, y, "?", {
               fontSize: "20px",
-              color: "#95a5a6", // Grey color for unclaimed
+              color: "#34495e", // Dark grey for hidden
               fontStyle: "bold",
             })
             .setOrigin(0.5);
 
           this.numberTexts[row][col] = numberText;
+        }
+      }
+    }
+
+    // Reveal initial numbers - smallest ones based on game mode
+    this.revealInitialNumbers();
+  }
+
+  private revealInitialNumbers() {
+    const numbersToReveal = this.gameMode === "single" ? 1 : 2;
+
+    // Find all unrevealed cells with their numbers
+    const unrevealedCells: { row: number; col: number; number: number }[] = [];
+    for (let row = 0; row < this.GRID_SIZE; row++) {
+      for (let col = 0; col < this.GRID_SIZE; col++) {
+        if (
+          !this.boardRevealed[row][col] &&
+          this.boardNumbers[row][col] !== 0
+        ) {
+          unrevealedCells.push({
+            row,
+            col,
+            number: this.boardNumbers[row][col],
+          });
+        }
+      }
+    }
+
+    // Sort by number value (smallest first)
+    unrevealedCells.sort((a, b) => a.number - b.number);
+
+    // Reveal the smallest numbers
+    for (
+      let i = 0;
+      i < Math.min(numbersToReveal, unrevealedCells.length);
+      i++
+    ) {
+      const cell = unrevealedCells[i];
+      this.revealCell(cell.row, cell.col);
+    }
+  }
+
+  private revealCell(row: number, col: number) {
+    if (this.boardRevealed[row][col] || this.boardNumbers[row][col] === 0) {
+      return; // Already revealed or FREE space
+    }
+
+    this.boardRevealed[row][col] = true;
+
+    // Update the text to show the actual number
+    const numberText = this.numberTexts[row][col];
+    numberText.setText(this.boardNumbers[row][col].toString());
+
+    // Color based on claim state
+    if (this.boardState[row][col] === "claimed") {
+      numberText.setColor("#ecf0f1"); // White for claimed in single player
+    } else if (this.boardState[row][col] === "p1") {
+      numberText.setColor("#ecf0f1"); // White for claimed by player 1
+    } else if (this.boardState[row][col] === "p2") {
+      numberText.setColor("#ecf0f1"); // White for claimed by player 2
+    } else {
+      numberText.setColor("#95a5a6"); // Grey for unclaimed but revealed
+    }
+  }
+
+  private revealAdjacentNumbers(centerRow: number, centerCol: number) {
+    // Define adjacent positions (including diagonals)
+    const directions = [
+      [-1, -1],
+      [-1, 0],
+      [-1, 1], // Top row
+      [0, -1],
+      [0, 1], // Same row (left, right)
+      [1, -1],
+      [1, 0],
+      [1, 1], // Bottom row
+    ];
+
+    for (const [deltaRow, deltaCol] of directions) {
+      const adjRow = centerRow + deltaRow;
+      const adjCol = centerCol + deltaCol;
+
+      // Check bounds
+      if (
+        adjRow >= 0 &&
+        adjRow < this.GRID_SIZE &&
+        adjCol >= 0 &&
+        adjCol < this.GRID_SIZE
+      ) {
+        // Reveal the adjacent cell if it's not already revealed
+        if (
+          !this.boardRevealed[adjRow][adjCol] &&
+          this.boardNumbers[adjRow][adjCol] !== 0
+        ) {
+          this.revealCell(adjRow, adjCol);
         }
       }
     }
@@ -579,6 +678,16 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    // Check if the cell is revealed
+    if (!this.boardRevealed[row][col]) {
+      // Cell not revealed - show red feedback
+      currentCell.setFillStyle(0xff6b6b);
+      this.time.delayedCall(500, () => {
+        this.restoreCellColor(row, col);
+      });
+      return;
+    }
+
     // Check if the player is holding the number that matches the board cell
     if (playerHeldNumber !== cellNumber) {
       // Wrong number for this cell - show red feedback
@@ -630,6 +739,9 @@ export class GameScene extends Phaser.Scene {
     player.heldNumber = null;
     player.updateHeldNumberDisplay();
 
+    // Reveal adjacent numbers
+    this.revealAdjacentNumbers(row, col);
+
     // Check for bingo
     if (this.checkForBingo(playerNum)) {
       this.handleBingo(playerNum);
@@ -654,13 +766,13 @@ export class GameScene extends Phaser.Scene {
       } else if (currentState === "p2") {
         currentCell.setFillStyle(0x3498db);
       } else {
-        currentCell.setFillStyle(0x7f8c8d); // Grey for unclaimed
+        currentCell.setFillStyle(0x2c3e50);
       }
     } else {
       if (currentState === "claimed") {
         currentCell.setFillStyle(0x27ae60); // Green for claimed
       } else {
-        currentCell.setFillStyle(0x7f8c8d); // Grey for unclaimed
+        currentCell.setFillStyle(0x2c3e50);
       }
     }
   }
