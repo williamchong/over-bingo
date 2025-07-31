@@ -58,6 +58,11 @@ export class GameScene extends Phaser.Scene {
       this.gameStarted = false;
     }
 
+    // Reset station arrays to ensure clean state
+    this.numberStations = [];
+    this.processingStations = [];
+    this.rubbishBin = null;
+
     this.createBingoBoard();
     this.createNumberStations();
     this.createProcessingStations();
@@ -65,6 +70,10 @@ export class GameScene extends Phaser.Scene {
     this.createPlayers();
     this.createUI();
     this.setupInput();
+
+    // Shuffle station positions at game start
+    this.shuffleNumberStations();
+    this.shuffleOperationStations();
   }
 
   private createBingoBoard() {
