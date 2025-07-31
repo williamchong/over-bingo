@@ -262,7 +262,7 @@ export class GameScene extends Phaser.Scene {
       this.player2 = new Player(
         2,
         this,
-        { x: 3, y: 3 },
+        { x: 4, y: 4 },
         0x3498db,
         this.gameMode,
       );
