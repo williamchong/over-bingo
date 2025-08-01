@@ -82,7 +82,7 @@ export class TutorialScene extends Phaser.Scene {
         .text(
           centerX,
           320,
-          "• Claiming a cell reveals 8 adjacent cells around it",
+          "• Claiming a cell reveals 1-5 random cells (count increases)",
           {
             fontSize: "16px",
             color: "#bdc3c7",
@@ -212,7 +212,7 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 350, "5. All 8 cells around it are now revealed!", {
+        .text(centerX, 350, "5. Random cells across the board are revealed!", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
@@ -284,7 +284,7 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 320, "• Each claim reveals 8 surrounding cells", {
+        .text(centerX, 320, "• Each claim reveals 1-5 random cells", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
@@ -368,7 +368,7 @@ export class TutorialScene extends Phaser.Scene {
         .text(
           centerX,
           380,
-          "• Each player's claims reveal new areas to explore",
+          "• Each player's claims reveal random areas to explore",
           {
             fontSize: "16px",
             color: "#bdc3c7",
@@ -379,7 +379,7 @@ export class TutorialScene extends Phaser.Scene {
         .text(
           centerX,
           410,
-          "• Strategic claiming opens up board for both players",
+          "• Random reveals create unpredictable opportunities",
           {
             fontSize: "16px",
             color: "#bdc3c7",

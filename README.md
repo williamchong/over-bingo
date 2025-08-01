@@ -22,7 +22,7 @@ Inspired by the cooperative chaos of _Overcooked_, Over-Bingo challenges players
 - **Dual Control Schemes**: Player 1 (WASD+Space) vs Player 2 (Arrows+Enter)
 - **Box Ownership System**: Players claim squares and block opponents
 - **Four Arithmetic Operations**: Addition, subtraction, multiplication, division
-- **Dynamic Gameplay**: Randomized numbers and shuffling station positions
+- **Dynamic Gameplay**: Randomized numbers and progressive random cell reveals
 - **Professional UI**: Modal dialogs, interactive tutorial, player indicators
 
 ## Table of Contents
@@ -42,7 +42,7 @@ Inspired by the cooperative chaos of _Overcooked_, Over-Bingo challenges players
 
 ## 1\. Game Concept
 
-Players control characters on a giant 5x5 bingo board that is pre-filled with random numbers. Most numbers are initially hidden, with only 1-2 smallest numbers visible at the start. Players must collect or create numbers using raw numbers and processing stations, then place them on matching revealed cells to claim them. Successfully claiming a cell reveals all 8 surrounding cells, creating expanding areas of opportunity. The first player or team to achieve a "BINGO" (5 in a row, column, or diagonal) wins. The challenge comes from strategic exploration and expansion while competing with other players for board control.
+Players control characters on a giant 5x5 bingo board that is pre-filled with random numbers. Most numbers are initially hidden, with only 1-2 smallest numbers visible at the start. Players must collect or create numbers using raw numbers and processing stations, then place them on matching revealed cells to claim them. Successfully claiming a cell reveals 1-5 random unrevealed cells (count increases with game progress), creating unpredictable discovery patterns. The first player or team to achieve a "BINGO" (5 in a row, column, or diagonal) wins. The challenge comes from adapting to random reveals while competing with other players for board control.
 
 ## 2\. Core Gameplay Loop
 
@@ -54,9 +54,8 @@ The game operates in a strategic, discovery-based loop:
 4.  **Process the Numbers:** Players take their gathered numbers to "Processing Stations" (`+`, `-`, `*`, `/`) to combine them.
     - _Example:_ To create `42`, a player might pick up a `6` and a `7`, take them to a Multiplication (`*`) station, and combine them to produce a `42`.
 5.  **Claim the Cell:** The player carries the finished number (`42`) to the matching revealed cell and places it there, claiming that cell for their team.
-6.  **Reveal Adjacent Cells:** Successfully claiming a cell reveals all 8 surrounding cells, exposing new numbers and opportunities.
-7.  **Station Shuffle:** After a successful claim, all number and processing stations shuffle to new positions.
-8.  **Repeat:** Players continue expanding their revealed areas and targeting strategically important numbers until someone achieves a bingo.
+6.  **Reveal Random Cells:** Successfully claiming a cell reveals 1-5 random unrevealed cells (count increases progressively), exposing new numbers and opportunities.
+7.  **Repeat:** Players continue discovering new areas and targeting strategically important numbers until someone achieves a bingo.
 
 ## 3\. Key Mechanics
 
@@ -73,8 +72,8 @@ The game operates in a strategic, discovery-based loop:
 - Players can only target revealed numbers on the board - hidden cells cannot be claimed.
 - Numbers range from 1-100, providing variety in mathematical challenges.
 - Players must create the exact number shown on a revealed cell to claim it.
-- Successfully claiming a cell reveals all 8 surrounding cells, creating expanding areas of opportunity.
-- Strategic players balance immediate claiming with long-term expansion to uncover optimal bingo paths.
+- Successfully claiming a cell reveals 1-5 random unrevealed cells (count increases with game progress), creating unpredictable discovery patterns.
+- Strategic players adapt to random reveals while planning optimal claim sequences to uncover bingo opportunities.
 
 ### 3.3 Number Stations & Processing
 
@@ -111,8 +110,8 @@ This section is for clarifying design choices that need to be made.
 ### 5.1 Progressive Reveal Balance
 
 - **Question:** How many cells should be revealed initially and after each claim?
-- **Current Implementation:** 1 cell revealed in single-player, 2 cells in multiplayer (smallest numbers). Each successful claim reveals 8 adjacent cells.
-- **Design Rationale:** This creates strategic tension between early-game accessibility and expansion planning, while preventing the board from becoming overwhelming.
+- **Current Implementation:** 1 cell revealed in single-player, 2 cells in multiplayer (smallest numbers). Each successful claim reveals 1-5 random cells (starts at 1, increases by 1 every 3 claims, max 5).
+- **Design Rationale:** This creates unpredictable discovery patterns that require players to adapt their strategies while maintaining manageable complexity.
 
 ### 5.2 Bingo Square Occupancy Limit
 
@@ -147,11 +146,11 @@ We will follow an iterative development process, starting with the core experien
 1.  **Milestone 1: Single-Player MVP ✅ COMPLETE**
     - [x] Implement grid-based player movement on extended 7x7 area (5x5 board + stations)
     - [x] Create comprehensive UI with start screen, tutorial, timer, and modal dialogs
-    - [x] Implement Number Stations (1-9) with randomized positioning and shuffling
+    - [x] Implement Number Stations (1-9) with fixed positioning
     - [x] Implement all four Processing Stations (+, -, ×, ÷) with color coding
     - [x] Implement rubbish bin for number disposal and complete interaction system
-    - [x] Add progressive reveal system with strategic board discovery and bingo detection
-    - [x] **BONUS**: Time attack mode, dynamic station shuffling, professional polish
+    - [x] Add progressive reveal system with random cell discovery and bingo detection
+    - [x] **BONUS**: Time attack mode, progressive random reveals, professional polish
     - **Status:** Fully playable single-player experience with advanced features!
 
 2.  **Milestone 2: Local Multiplayer VS Mode ✅ COMPLETE**
