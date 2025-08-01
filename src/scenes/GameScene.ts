@@ -34,6 +34,8 @@ export class GameScene extends Phaser.Scene {
   private currentTime: number = 0;
   private timerText!: Phaser.GameObjects.Text;
   private gameStarted: boolean = false;
+  private instructionText!: Phaser.GameObjects.Text;
+  private hasPlayerMoved: boolean = false;
 
   private readonly GRID_SIZE = 5;
   private readonly CELL_SIZE = 80;
@@ -48,6 +50,9 @@ export class GameScene extends Phaser.Scene {
     // Set game mode from scene data
     this.gameMode = (data?.gameMode as "single" | "vs") || "single";
     this.isEndgameMode = false;
+
+    // Reset instruction text state
+    this.hasPlayerMoved = false;
 
     // Start timer only for single player mode
     if (this.gameMode === "single") {
@@ -241,12 +246,18 @@ export class GameScene extends Phaser.Scene {
     totalClaims = Math.max(0, totalClaims - 1);
 
     // Progressive reveal count: start with 1, increase by 1 every 3 claims, max 5
-    const revealCount = Math.min(5, Math.max(1, 1 + Math.floor(totalClaims / 3)));
+    const revealCount = Math.min(
+      5,
+      Math.max(1, 1 + Math.floor(totalClaims / 3)),
+    );
 
     // Shuffle unrevealed cells and reveal random ones
     for (let i = unrevealedCells.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [unrevealedCells[i], unrevealedCells[j]] = [unrevealedCells[j], unrevealedCells[i]];
+      [unrevealedCells[i], unrevealedCells[j]] = [
+        unrevealedCells[j],
+        unrevealedCells[i],
+      ];
     }
 
     // Reveal up to revealCount cells
@@ -456,6 +467,20 @@ export class GameScene extends Phaser.Scene {
   private createUI() {
     const centerX = this.cameras.main.width / 2;
 
+    // Add instruction text at top center for both modes
+    this.instructionText = this.add
+      .text(
+        centerX,
+        30,
+        "Get numbers from stations, match them to board for bingo!",
+        {
+          fontSize: "16px",
+          color: "#f39c12",
+          fontStyle: "bold",
+        },
+      )
+      .setOrigin(0.5);
+
     if (this.gameMode === "single") {
       // Timer display (top right) - single player only
       this.timerText = this.add
@@ -576,44 +601,56 @@ export class GameScene extends Phaser.Scene {
         Phaser.Input.Keyboard.JustDown(this.wasdKeys.A)
       ) {
         this.player1.move("left");
+        this.hideInstructionOnFirstMove();
       } else if (
         Phaser.Input.Keyboard.JustDown(this.cursors.right!) ||
         Phaser.Input.Keyboard.JustDown(this.wasdKeys.D)
       ) {
         this.player1.move("right");
+        this.hideInstructionOnFirstMove();
       } else if (
         Phaser.Input.Keyboard.JustDown(this.cursors.up!) ||
         Phaser.Input.Keyboard.JustDown(this.wasdKeys.W)
       ) {
         this.player1.move("up");
+        this.hideInstructionOnFirstMove();
       } else if (
         Phaser.Input.Keyboard.JustDown(this.cursors.down!) ||
         Phaser.Input.Keyboard.JustDown(this.wasdKeys.S)
       ) {
         this.player1.move("down");
+        this.hideInstructionOnFirstMove();
       }
     } else {
       // VS mode - separate controls for each player
       // Player 1 movement (WASD)
       if (Phaser.Input.Keyboard.JustDown(this.wasdKeys.A)) {
         this.player1.move("left");
+        this.hideInstructionOnFirstMove();
       } else if (Phaser.Input.Keyboard.JustDown(this.wasdKeys.D)) {
         this.player1.move("right");
+        this.hideInstructionOnFirstMove();
       } else if (Phaser.Input.Keyboard.JustDown(this.wasdKeys.W)) {
         this.player1.move("up");
+        this.hideInstructionOnFirstMove();
       } else if (Phaser.Input.Keyboard.JustDown(this.wasdKeys.S)) {
         this.player1.move("down");
+        this.hideInstructionOnFirstMove();
       }
 
       // Player 2 movement (Arrow keys)
       if (Phaser.Input.Keyboard.JustDown(this.cursors.left!)) {
         this.player2.move("left");
+        this.hideInstructionOnFirstMove();
       } else if (Phaser.Input.Keyboard.JustDown(this.cursors.right!)) {
         this.player2.move("right");
+        this.hideInstructionOnFirstMove();
       } else if (Phaser.Input.Keyboard.JustDown(this.cursors.up!)) {
         this.player2.move("up");
+        this.hideInstructionOnFirstMove();
       } else if (Phaser.Input.Keyboard.JustDown(this.cursors.down!)) {
         this.player2.move("down");
+        this.hideInstructionOnFirstMove();
       }
     }
   }
@@ -790,7 +827,6 @@ export class GameScene extends Phaser.Scene {
       }
     }
   }
-
 
   private isBoardFull(): boolean {
     for (let row = 0; row < this.GRID_SIZE; row++) {
@@ -1079,5 +1115,12 @@ export class GameScene extends Phaser.Scene {
     this.cursors.right!.enabled = false;
     this.cursors.up!.enabled = false;
     this.cursors.down!.enabled = false;
+  }
+
+  private hideInstructionOnFirstMove() {
+    if (!this.hasPlayerMoved && this.instructionText) {
+      this.hasPlayerMoved = true;
+      this.instructionText.setVisible(false);
+    }
   }
 }
