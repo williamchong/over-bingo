@@ -212,38 +212,48 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  private revealAdjacentNumbers(centerRow: number, centerCol: number) {
-    // Define adjacent positions (including diagonals)
-    const directions = [
-      [-1, -1],
-      [-1, 0],
-      [-1, 1], // Top row
-      [0, -1],
-      [0, 1], // Same row (left, right)
-      [1, -1],
-      [1, 0],
-      [1, 1], // Bottom row
-    ];
-
-    for (const [deltaRow, deltaCol] of directions) {
-      const adjRow = centerRow + deltaRow;
-      const adjCol = centerCol + deltaCol;
-
-      // Check bounds
-      if (
-        adjRow >= 0 &&
-        adjRow < this.GRID_SIZE &&
-        adjCol >= 0 &&
-        adjCol < this.GRID_SIZE
-      ) {
-        // Reveal the adjacent cell if it's not already revealed
+  private revealRandomNumbers() {
+    // Get all unrevealed cells (excluding FREE space)
+    const unrevealedCells: { row: number; col: number }[] = [];
+    for (let row = 0; row < this.GRID_SIZE; row++) {
+      for (let col = 0; col < this.GRID_SIZE; col++) {
         if (
-          !this.boardRevealed[adjRow][adjCol] &&
-          this.boardNumbers[adjRow][adjCol] !== 0
+          !this.boardRevealed[row][col] &&
+          this.boardNumbers[row][col] !== 0 // Skip FREE space
         ) {
-          this.revealCell(adjRow, adjCol);
+          unrevealedCells.push({ row, col });
         }
       }
+    }
+
+    if (unrevealedCells.length === 0) return;
+
+    // Calculate total claims made to determine reveal count
+    let totalClaims = 0;
+    for (let row = 0; row < this.GRID_SIZE; row++) {
+      for (let col = 0; col < this.GRID_SIZE; col++) {
+        if (this.boardState[row][col] !== null) {
+          totalClaims++;
+        }
+      }
+    }
+    // Subtract 1 for the FREE space which is always claimed
+    totalClaims = Math.max(0, totalClaims - 1);
+
+    // Progressive reveal count: start with 1, increase by 1 every 3 claims, max 5
+    const revealCount = Math.min(5, Math.max(1, 1 + Math.floor(totalClaims / 3)));
+
+    // Shuffle unrevealed cells and reveal random ones
+    for (let i = unrevealedCells.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [unrevealedCells[i], unrevealedCells[j]] = [unrevealedCells[j], unrevealedCells[i]];
+    }
+
+    // Reveal up to revealCount cells
+    const cellsToReveal = Math.min(revealCount, unrevealedCells.length);
+    for (let i = 0; i < cellsToReveal; i++) {
+      const cell = unrevealedCells[i];
+      this.revealCell(cell.row, cell.col);
     }
   }
 
@@ -746,8 +756,8 @@ export class GameScene extends Phaser.Scene {
     player.heldNumber = null;
     player.updateHeldNumberDisplay();
 
-    // Reveal adjacent numbers
-    this.revealAdjacentNumbers(row, col);
+    // Reveal random numbers
+    this.revealRandomNumbers();
 
     // Check for bingo
     if (this.checkForBingo(playerNum)) {
