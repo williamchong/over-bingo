@@ -245,10 +245,10 @@ export class GameScene extends Phaser.Scene {
     // Subtract 1 for the FREE space which is always claimed
     totalClaims = Math.max(0, totalClaims - 1);
 
-    // Progressive reveal count: start with 1, increase by 1 every 3 claims, max 5
+    // Progressive reveal count: start with 3, increase by 1 every 3 claims, max 5
     const revealCount = Math.min(
       5,
-      Math.max(1, 1 + Math.floor(totalClaims / 3)),
+      Math.max(3, 3 + Math.floor(totalClaims / 3)),
     );
 
     // Shuffle unrevealed cells and reveal random ones

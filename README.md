@@ -42,7 +42,7 @@ Inspired by the cooperative chaos of _Overcooked_, Over-Bingo challenges players
 
 ## 1\. Game Concept
 
-Players control characters on a giant 5x5 bingo board that is pre-filled with random numbers. Most numbers are initially hidden, with only 1-2 smallest numbers visible at the start. Players must collect or create numbers using raw numbers and processing stations, then place them on matching revealed cells to claim them. Successfully claiming a cell reveals 1-5 random unrevealed cells (count increases with game progress), creating unpredictable discovery patterns. The first player or team to achieve a "BINGO" (5 in a row, column, or diagonal) wins. The challenge comes from adapting to random reveals while competing with other players for board control.
+Players control characters on a giant 5x5 bingo board that is pre-filled with random numbers. Most numbers are initially hidden, with only 1-2 smallest numbers visible at the start. Players must collect or create numbers using raw numbers and processing stations, then place them on matching revealed cells to claim them. Successfully claiming a cell reveals 3-5 random unrevealed cells (count increases with game progress), creating unpredictable discovery patterns. The first player or team to achieve a "BINGO" (5 in a row, column, or diagonal) wins. The challenge comes from adapting to random reveals while competing with other players for board control.
 
 ## 2\. Core Gameplay Loop
 
@@ -54,7 +54,7 @@ The game operates in a strategic, discovery-based loop:
 4.  **Process the Numbers:** Players take their gathered numbers to "Processing Stations" (`+`, `-`, `*`, `/`) to combine them.
     - _Example:_ To create `42`, a player might pick up a `6` and a `7`, take them to a Multiplication (`*`) station, and combine them to produce a `42`.
 5.  **Claim the Cell:** The player carries the finished number (`42`) to the matching revealed cell and places it there, claiming that cell for their team.
-6.  **Reveal Random Cells:** Successfully claiming a cell reveals 1-5 random unrevealed cells (count increases progressively), exposing new numbers and opportunities.
+6.  **Reveal Random Cells:** Successfully claiming a cell reveals 3-5 random unrevealed cells (count increases progressively), exposing new numbers and opportunities.
 7.  **Repeat:** Players continue discovering new areas and targeting strategically important numbers until someone achieves a bingo.
 
 ## 3\. Key Mechanics
@@ -72,7 +72,7 @@ The game operates in a strategic, discovery-based loop:
 - Players can only target revealed numbers on the board - hidden cells cannot be claimed.
 - Numbers range from 1-100, providing variety in mathematical challenges.
 - Players must create the exact number shown on a revealed cell to claim it.
-- Successfully claiming a cell reveals 1-5 random unrevealed cells (count increases with game progress), creating unpredictable discovery patterns.
+- Successfully claiming a cell reveals 3-5 random unrevealed cells (count increases with game progress), creating unpredictable discovery patterns.
 - Strategic players adapt to random reveals while planning optimal claim sequences to uncover bingo opportunities.
 
 ### 3.3 Number Stations & Processing
@@ -110,7 +110,7 @@ This section is for clarifying design choices that need to be made.
 ### 5.1 Progressive Reveal Balance
 
 - **Question:** How many cells should be revealed initially and after each claim?
-- **Current Implementation:** 1 cell revealed in single-player, 2 cells in multiplayer (smallest numbers). Each successful claim reveals 1-5 random cells (starts at 1, increases by 1 every 3 claims, max 5).
+- **Current Implementation:** 1 cell revealed in single-player, 2 cells in multiplayer (smallest numbers). Each successful claim reveals 3-5 random cells (starts at 1, increases by 1 every 3 claims, max 5).
 - **Design Rationale:** This creates unpredictable discovery patterns that require players to adapt their strategies while maintaining manageable complexity.
 
 ### 5.2 Bingo Square Occupancy Limit

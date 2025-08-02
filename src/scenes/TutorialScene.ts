@@ -82,7 +82,7 @@ export class TutorialScene extends Phaser.Scene {
         .text(
           centerX,
           320,
-          "• Claiming a cell reveals 1-5 random cells (count increases)",
+          "• Claiming a cell reveals 3-5 random cells (count increases)",
           {
             fontSize: "16px",
             color: "#bdc3c7",
@@ -297,7 +297,7 @@ export class TutorialScene extends Phaser.Scene {
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 320, "• Each claim reveals 1-5 random cells", {
+        .text(centerX, 320, "• Each claim reveals 3-5 random cells", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
