@@ -389,26 +389,26 @@ export class GameScene extends Phaser.Scene {
         x: this.BOARD_START_X - this.CELL_SIZE,
         y: this.BOARD_START_Y + 0 * this.CELL_SIZE,
         operation: "+",
-        color: 0x9b59b6,
-      }, // Left side, top position
+        color: 0xe91e63,
+      }, // Left side, top position - Pink
       {
         x: this.BOARD_START_X - this.CELL_SIZE,
         y: this.BOARD_START_Y + 4 * this.CELL_SIZE,
         operation: "-",
         color: 0xe67e22,
-      }, // Left side, bottom position
+      }, // Left side, bottom position - Orange
       {
         x: this.BOARD_START_X + 5 * this.CELL_SIZE,
         y: this.BOARD_START_Y + 0 * this.CELL_SIZE,
         operation: "×",
         color: 0x2980b9,
-      }, // Right side, top position
+      }, // Right side, top position - Blue
       {
         x: this.BOARD_START_X + 5 * this.CELL_SIZE,
         y: this.BOARD_START_Y + 4 * this.CELL_SIZE,
         operation: "÷",
-        color: 0x8e44ad,
-      }, // Right side, bottom position - Purple (different shade)
+        color: 0x9b59b6,
+      }, // Right side, bottom position - Purple
     ];
 
     stations.forEach((stationData) => {
