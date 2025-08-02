@@ -356,13 +356,13 @@ export class GameScene extends Phaser.Scene {
       const container = this.add.container(station.x, station.y);
 
       // Station background with bounded green intensity range for better readability
-      // Map numbers 1-9 to green range 80-200 (instead of 0-255) for better contrast
-      const minGreen = 80;
-      const maxGreen = 200;
+      // Map numbers 1-9 to green range 60-140 for better white text contrast
+      const minGreen = 60;
+      const maxGreen = 140;
       const greenRange = maxGreen - minGreen;
       const greenIntensity =
         minGreen + Math.floor(((10 - station.number) / 9) * greenRange);
-      const greenColor = (greenIntensity << 8) | 0x001000; // Green channel + minimal base
+      const greenColor = (greenIntensity << 8) | 0x002000; // Green channel + darker base
       const bg = this.add.rectangle(0, 0, 60, 40, greenColor);
 
       // Number display
