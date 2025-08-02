@@ -133,14 +133,14 @@ export class TutorialScene extends Phaser.Scene {
         )
         .setOrigin(0.5),
       this.add
-        .text(centerX, 290, "PURPLE STATION:", {
+        .text(centerX, 290, "PROCESSING STATIONS:", {
           fontSize: "18px",
           color: "#9b59b6",
           fontStyle: "bold",
         })
         .setOrigin(0.5),
       this.add
-        .text(centerX, 320, "• Performs addition (+)", {
+        .text(centerX, 320, "• Purple (+), Orange (-), Blue (×), Red (÷)", {
           fontSize: "16px",
           color: "#bdc3c7",
         })
@@ -149,12 +149,25 @@ export class TutorialScene extends Phaser.Scene {
         .text(
           centerX,
           350,
-          "• Drop one number, then drop another to add them",
+          "• Drop one number, then drop another to process them",
           {
             fontSize: "16px",
             color: "#bdc3c7",
           },
         )
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 380, "WHITE RUBBISH BIN:", {
+          fontSize: "18px",
+          color: "#ecf0f1",
+          fontStyle: "bold",
+        })
+        .setOrigin(0.5),
+      this.add
+        .text(centerX, 410, "• Discard unwanted numbers", {
+          fontSize: "16px",
+          color: "#bdc3c7",
+        })
         .setOrigin(0.5),
     ]);
     this.pageContent.push(page2);

@@ -107,7 +107,7 @@ export class StartScene extends Phaser.Scene {
 
     // Version/credit text (clickable)
     const versionText = this.add
-      .text(centerX, this.cameras.main.height - 30, "Milestone 2 MVP", {
+      .text(centerX, this.cameras.main.height - 30, "Full Release v1.0", {
         fontSize: "12px",
         color: "#95a5a6",
       })
